@@ -1,13 +1,9 @@
-pub mod atn;
+pub mod input_stream;
 pub mod tree;
 pub mod token;
 pub mod int_stream;
-pub mod tokensrc;
-pub mod chstream;
-pub mod interval;
-pub mod tokenstream;
-pub mod chstreams;
-pub mod codp_chstream;
+pub mod token_source;
+pub mod char_stream;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right

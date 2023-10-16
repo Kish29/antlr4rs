@@ -22,11 +22,11 @@ pub trait IntStream {
 
     fn release(&mut self, marker: isize);
 
-    fn index() -> isize;
+    fn index(&self) -> isize;
 
     fn seek(&mut self, index: isize);
 
-    fn size() -> isize;
+    fn size(&self) -> isize;
 
-    fn source_name() -> String;
+    fn source_name(&self) -> String;
 }
