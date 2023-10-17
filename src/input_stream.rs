@@ -10,10 +10,10 @@ pub struct InputStream {
 }
 
 impl InputStream {
-    pub fn new(text: &String) -> Box<Self> {
-        let chars: Vec<char> = text.chars().to_owned().collect();
+    pub fn new(text: &str) -> Box<Self> {
+        let chars: Vec<char> = text.chars().collect();
         Box::new(Self {
-            name: "FromString".to_string(),
+            name: "Stream from string".to_string(),
             index: 0,
             size: chars.len() as isize,
             data: chars,
@@ -103,14 +103,15 @@ impl CharStream for InputStream {
     }
 }
 
-mod test {
+mod tests {
+    use std::ops::Index;
     use crate::char_stream::CharStream;
     use crate::input_stream::InputStream;
     use crate::int_stream::EOF;
 
     #[test]
-    fn test_new_input_stream() {
-        let text = "A你4好§，\\".to_string();
+    fn test_input_stream() {
+        let text = "A你4好§，\\❤".to_string();
         let is = &mut *InputStream::new(&text) as &mut dyn CharStream;
         assert_eq!(is.la(1), 'A' as isize);
         assert_eq!(is.index(), 0);
@@ -136,17 +137,24 @@ mod test {
         assert_eq!(is.index(), 5);
         assert_eq!(is.la(2), '\\' as isize);
         assert_eq!(is.la(-2), '好' as isize);
-        assert_eq!(is.la(3), EOF);
+        assert_eq!(is.la(4), EOF);
         is.consume();
         assert_eq!(is.la(1), '\\' as isize);
         assert_eq!(is.index(), 6);
-        assert_eq!(is.la(2), EOF);
+        assert_eq!(is.la(3), EOF);
         assert_eq!(is.la(-2), '§' as isize);
         assert_eq!(is.la(-10), EOF);
+        is.consume();
+        assert_eq!(is.la(1), '❤' as isize);
+        assert_eq!(is.index(), 7);
+        assert_eq!(is.la(2), EOF);
+        assert_eq!(is.la(-3), '§' as isize);
+        assert_eq!(is.la(-10), EOF);
+
         assert_eq!(is.text(1, 1), "你");
         assert_eq!(is.text(1, 2), "你4");
         assert_eq!(is.text(3, 5), "好§，");
         assert_eq!(is.text(0, 5), "A你4好§，");
-        assert_eq!(is.text(3, 10), "好§，\\");
+        assert_eq!(is.text(3, 10), "好§，\\❤");
     }
 }

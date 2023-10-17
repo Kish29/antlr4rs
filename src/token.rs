@@ -84,3 +84,15 @@ pub trait Token {
      */
     fn input_stream(&self) -> Option<Rc<dyn CharStream>>;
 }
+
+pub struct BaseToken {
+    pub token_type: isize,
+    pub channel: isize,
+    pub start: isize,
+    pub stop: isize,
+    pub token_index: isize,
+    pub line: isize,
+    pub column: isize,
+    pub text: String,
+    pub read_only: bool,
+}
