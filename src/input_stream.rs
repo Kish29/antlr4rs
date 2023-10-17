@@ -23,6 +23,7 @@ impl InputStream {
 
 impl IntStream for InputStream {
     /// Consume(read) one char(rune)
+    #[inline]
     fn consume(&mut self) {
         // can not read EOF
         if self.size == self.index {
@@ -44,6 +45,7 @@ impl IntStream for InputStream {
     /// stream.la(-1) ===> b
     /// stream.la(-2) ===> a
     /// stream.la(-10) ===> EOF
+    #[inline]
     fn la(&mut self, i: isize) -> isize {
         if i == 0 {
             panic!("undefined invocation: LA(0)")
@@ -64,16 +66,20 @@ impl IntStream for InputStream {
     }
 
     /// mark/release do nothing; we have entire buffer
+    #[inline]
     fn mark(&mut self) -> isize {
         -1
     }
 
+    #[inline]
     fn release(&mut self, _marker: isize) {}
 
+    #[inline]
     fn index(&self) -> isize {
         self.index
     }
 
+    #[inline]
     fn seek(&mut self, index: isize) {
         if index <= self.index {
             self.index = index;
@@ -82,10 +88,12 @@ impl IntStream for InputStream {
         self.index = min(index, self.size)
     }
 
+    #[inline]
     fn size(&self) -> isize {
         self.size
     }
 
+    #[inline]
     fn source_name(&self) -> String {
         self.name.clone()
     }
@@ -104,15 +112,13 @@ impl CharStream for InputStream {
 }
 
 mod tests {
-    use std::ops::Index;
     use crate::char_stream::CharStream;
     use crate::input_stream::InputStream;
     use crate::int_stream::EOF;
 
     #[test]
     fn test_input_stream() {
-        let text = "A你4好§，\\❤".to_string();
-        let is = &mut *InputStream::new(&text) as &mut dyn CharStream;
+        let is = &mut *InputStream::new(r#"A你4好§，\❤"#) as &mut dyn CharStream;
         assert_eq!(is.la(1), 'A' as isize);
         assert_eq!(is.index(), 0);
         is.consume();
