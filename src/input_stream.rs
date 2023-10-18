@@ -5,7 +5,6 @@ use crate::code_point::CodePoints;
 use crate::int_stream::{EOF, IntStream};
 
 pub struct InputStream<T> {
-    name: String,
     index: isize,
     size: isize,
     data: T,
@@ -19,7 +18,6 @@ type CodePoint32BitStream<'a> = InputStream<&'a [u32]>;
 impl<'a, T: ?Sized + CodePoints> InputStream<&'a T> {
     pub fn new(input: &'a T) -> Self {
         Self {
-            name: "Data from string".to_string(),
             index: 0,
             size: input.len() as isize,
             data: input,
@@ -35,7 +33,7 @@ impl<'a, T: Deref> IntStream for InputStream<T> where T::Target: CodePoints {
         if self.size == self.index {
             panic!("can not consume EOF")
         }
-        self.index = self.index + 1
+        self.index += 1
     }
 
     /// Get the value of symbol at offset `i` from the current position.
