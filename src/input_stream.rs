@@ -177,21 +177,54 @@ mod tests {
     fn test_code_point_8bit_stream() {
         let mut v = CodePoint8BitStream::new(&b"V12"[..]);
         assert_eq!(v.la(1), 'V' as isize);
+        assert_eq!(v.index(), 0);
         v.consume();
         assert_eq!(v.la(1), '1' as isize);
+        assert_eq!(v.index(), 1);
         v.consume();
         assert_eq!(v.la(1), '2' as isize);
+        assert_eq!(v.index(), 2);
     }
 
     #[test]
     fn test_code_point_16bit_stream() {
-        let mut v = CodePoint16BitStream::new(&[1u16, 2u16, 3u16, 4u16, 5u16]);
-        assert_eq!(v.la(1), 'V' as isize);
+        let mut v = CodePoint16BitStream::new(&[0x00a3, 0x00a4, 0x00a5, 0x00a6, 0x00a7]);
+        assert_eq!(v.la(1), '£' as isize);
+        assert_eq!(v.index(), 0);
+        v.consume();
+        assert_eq!(v.la(1), '¤' as isize);
+        assert_eq!(v.index(), 1);
+        v.consume();
+        assert_eq!(v.la(1), '¥' as isize);
+        assert_eq!(v.index(), 2);
+        v.consume();
+        assert_eq!(v.la(1), '¦' as isize);
+        assert_eq!(v.index(), 3);
+        v.consume();
+        assert_eq!(v.la(1), '§' as isize);
+        assert_eq!(v.index(), 4);
+        v.consume();
+        assert_eq!(v.la(1), EOF);
     }
 
     #[test]
     fn test_code_point_32bit_stream() {
-        let mut v = CodePoint32BitStream::new(&[1u32, 2u32, 3u32, 4u32, 5u32]);
-        assert_eq!(v.la(1), 'V' as isize);
+        let mut v = CodePoint32BitStream::new(&[0x00a3, 0x00a4, 0x00a5, 0x00a6, 0x00a7]);
+        assert_eq!(v.la(1), '£' as isize);
+        assert_eq!(v.index(), 0);
+        v.consume();
+        assert_eq!(v.la(1), '¤' as isize);
+        assert_eq!(v.index(), 1);
+        v.consume();
+        assert_eq!(v.la(1), '¥' as isize);
+        assert_eq!(v.index(), 2);
+        v.consume();
+        assert_eq!(v.la(1), '¦' as isize);
+        assert_eq!(v.index(), 3);
+        v.consume();
+        assert_eq!(v.la(1), '§' as isize);
+        assert_eq!(v.index(), 4);
+        v.consume();
+        assert_eq!(v.la(1), EOF);
     }
 }
