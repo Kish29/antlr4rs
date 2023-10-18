@@ -12,6 +12,9 @@ pub struct InputStream<T> {
 }
 
 type ByteStream<'a> = InputStream<&'a [u8]>;
+type CodePoint8BitStream<'a> = InputStream<&'a [u8]>;
+type CodePoint16BitStream<'a> = InputStream<&'a [u16]>;
+type CodePoint32BitStream<'a> = InputStream<&'a [u32]>;
 
 impl<'a, T: ?Sized + CodePoints> InputStream<&'a T> {
     pub fn new(input: &'a T) -> Self {
@@ -111,7 +114,7 @@ impl<'a, T: Deref> CharStream<T> for InputStream<T> where T::Target: CodePoints 
 
 mod tests {
     use crate::char_stream::CharStream;
-    use crate::input_stream::{ByteStream, InputStream};
+    use crate::input_stream::{ByteStream, CodePoint16BitStream, CodePoint32BitStream, CodePoint8BitStream, InputStream};
     use crate::int_stream::{EOF, IntStream};
 
     #[test]
@@ -167,6 +170,28 @@ mod tests {
     #[test]
     fn test_byte_stream() {
         let mut v = ByteStream::new(&b"V\xaa\xbb"[..]);
+        assert_eq!(v.la(1), 'V' as isize);
+    }
+
+    #[test]
+    fn test_code_point_8bit_stream() {
+        let mut v = CodePoint8BitStream::new(&b"V12"[..]);
+        assert_eq!(v.la(1), 'V' as isize);
+        v.consume();
+        assert_eq!(v.la(1), '1' as isize);
+        v.consume();
+        assert_eq!(v.la(1), '2' as isize);
+    }
+
+    #[test]
+    fn test_code_point_16bit_stream() {
+        let mut v = CodePoint16BitStream::new(&[1u16, 2u16, 3u16, 4u16, 5u16]);
+        assert_eq!(v.la(1), 'V' as isize);
+    }
+
+    #[test]
+    fn test_code_point_32bit_stream() {
+        let mut v = CodePoint32BitStream::new(&[1u32, 2u32, 3u32, 4u32, 5u32]);
         assert_eq!(v.la(1), 'V' as isize);
     }
 }
