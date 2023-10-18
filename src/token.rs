@@ -75,14 +75,11 @@ pub trait Token {
     ///  This method is optional; return -1 if not implemented.
     fn stop_index(&self) -> isize;
 
-    /** Gets the {@link TokenSource} which created this token.
-     */
+    // Gets the {@link TokenSource} which created this token.
     fn token_source(&self) -> Option<Rc<dyn TokenSource>>;
 
-    /**
-     * Gets the {@link CharStream} from which this token was derived.
-     */
-    fn input_stream(&self) -> Option<Rc<dyn CharStream>>;
+    // Gets the {@link CharStream} from which this token was derived.
+    // fn input_stream(&self) -> Option<Rc<dyn CharStream>>;
 }
 
 pub struct BaseToken {

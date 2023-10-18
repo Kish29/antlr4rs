@@ -5,13 +5,15 @@ use antlr4rs::input_stream::InputStream;
 
 
 fn create_input_stream() {
-    let is = &mut *InputStream::new("A你4好§，\\❤") as &mut dyn CharStream;
-    is.consume();
-    is.consume();
-    is.consume();
-    is.consume();
-    is.consume();
-    is.consume();
+    let mut input = InputStream::new(r#"A你4好§，\❤"#);
+    let input = &mut input as &mut dyn CharStream<&str>;
+    assert_eq!(input.size(), 8);
+    input.consume();
+    input.consume();
+    input.consume();
+    input.consume();
+    input.consume();
+    input.consume();
 }
 
 fn bench_input_stream(c: &mut Criterion) {

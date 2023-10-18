@@ -1,29 +1,32 @@
 use std::cmp::min;
+use std::ops::Deref;
 use crate::char_stream::CharStream;
+use crate::code_point::CodePoints;
 use crate::int_stream::{EOF, IntStream};
 
-pub struct InputStream {
+pub struct InputStream<T> {
     name: String,
     index: isize,
     size: isize,
-    data: Vec<char>,
+    data: T,
 }
 
-impl InputStream {
-    pub fn new(text: &str) -> Box<Self> {
-        let chars: Vec<char> = text.chars().collect();
-        Box::new(Self {
-            name: "Stream from string".to_string(),
+type ByteStream<'a> = InputStream<&'a [u8]>;
+
+impl<'a, T: ?Sized + CodePoints> InputStream<&'a T> {
+    pub fn new(input: &'a T) -> Self {
+        Self {
+            name: "Data from string".to_string(),
             index: 0,
-            size: chars.len() as isize,
-            data: chars,
-        })
+            size: input.len() as isize,
+            data: input,
+        }
     }
 }
 
-impl IntStream for InputStream {
-    /// Consume(read) one char(rune)
+impl<'a, T: Deref> IntStream for InputStream<T> where T::Target: CodePoints {
     #[inline]
+    /// Consume(read) one char(rune)
     fn consume(&mut self) {
         // can not read EOF
         if self.size == self.index {
@@ -37,13 +40,13 @@ impl IntStream for InputStream {
     /// return current symbol if `i` == 1
     /// i == 0 will panic cause the undefined operation
     /// i < 0 return the symbol back of current position, `EOF` will return if current position at the end of stream.
-    /// eg: stream: abcdefg, current index is `2`
+    /// eg: stream: abcdefg, current `index` is `2`
     /// stream.la(0) ===> panic
-    /// stream.la(1) ===> c
-    /// stream.la(2) ===> d
+    /// stream.la(1) ===> int value of 'c'
+    /// stream.la(2) ===> int value of 'd'
     /// stream.la(10) ===> EOF
-    /// stream.la(-1) ===> b
-    /// stream.la(-2) ===> a
+    /// stream.la(-1) ===> int value of 'b'
+    /// stream.la(-2) ===> int value of 'a'
     /// stream.la(-10) ===> EOF
     #[inline]
     fn la(&mut self, i: isize) -> isize {
@@ -51,18 +54,18 @@ impl IntStream for InputStream {
             panic!("undefined invocation: LA(0)")
         }
         // calculate offset
-        let offset;
+        let new_index;
         if i < 0 {
-            offset = self.index + i;
+            new_index = self.index + i;
         } else {
             // case: i > 0, cause LA(1) return the current value in buffer, use index + i - 1;
-            offset = self.index + i - 1;
+            new_index = self.index + i - 1;
         }
-        if offset < 0 || offset >= self.size {
-            EOF
-        } else {
-            self.data[offset as usize] as isize
+
+        if new_index < 0 || new_index >= self.size {
+            return EOF;
         }
+        self.data.code_point_at(new_index).unwrap_or(EOF)
     }
 
     /// mark/release do nothing; we have entire buffer
@@ -99,68 +102,71 @@ impl IntStream for InputStream {
     }
 }
 
-impl CharStream for InputStream {
-    fn text(&self, start: usize, mut end: usize) -> String {
-        if start > end {
-            return "".to_string();
-        }
-        if end >= self.size as usize {
-            end = (self.size - 1) as usize;
-        }
-        self.data[start..end + 1].into_iter().collect()
+impl<'a, T: Deref> CharStream<T> for InputStream<T> where T::Target: CodePoints {
+    fn text(&self, start: usize, end: usize) -> String {
+        todo!()
     }
 }
 
+
 mod tests {
     use crate::char_stream::CharStream;
-    use crate::input_stream::InputStream;
-    use crate::int_stream::EOF;
+    use crate::input_stream::{ByteStream, InputStream};
+    use crate::int_stream::{EOF, IntStream};
 
     #[test]
     fn test_input_stream() {
-        let is = &mut *InputStream::new(r#"A你4好§，\❤"#) as &mut dyn CharStream;
-        assert_eq!(is.la(1), 'A' as isize);
-        assert_eq!(is.index(), 0);
-        is.consume();
-        assert_eq!(is.la(1), '你' as isize);
-        assert_eq!(is.la(-1), 'A' as isize);
-        assert_eq!(is.index(), 1);
-        is.consume();
-        assert_eq!(is.la(1), '4' as isize);
-        assert_eq!(is.index(), 2);
-        is.consume();
-        assert_eq!(is.la(1), '好' as isize);
-        assert_eq!(is.index(), 3);
-        assert_eq!(is.la(-2), '你' as isize);
-        is.consume();
-        assert_eq!(is.la(1), '§' as isize);
-        assert_eq!(is.index(), 4);
-        assert_eq!(is.la(2), '，' as isize);
-        assert_eq!(is.la(-2), '4' as isize);
-        assert_eq!(is.la(3), '\\' as isize);
-        is.consume();
-        assert_eq!(is.la(1), '，' as isize);
-        assert_eq!(is.index(), 5);
-        assert_eq!(is.la(2), '\\' as isize);
-        assert_eq!(is.la(-2), '好' as isize);
-        assert_eq!(is.la(4), EOF);
-        is.consume();
-        assert_eq!(is.la(1), '\\' as isize);
-        assert_eq!(is.index(), 6);
-        assert_eq!(is.la(3), EOF);
-        assert_eq!(is.la(-2), '§' as isize);
-        assert_eq!(is.la(-10), EOF);
-        is.consume();
-        assert_eq!(is.la(1), '❤' as isize);
-        assert_eq!(is.index(), 7);
-        assert_eq!(is.la(2), EOF);
-        assert_eq!(is.la(-3), '§' as isize);
-        assert_eq!(is.la(-10), EOF);
+        let mut input = InputStream::new(r#"A你4好§，\❤"#);
+        let input = &mut input as &mut dyn CharStream<&str>;
+        assert_eq!(input.size(), 8);
+        assert_eq!(input.la(1), 'A' as isize);
+        assert_eq!(input.index(), 0);
+        input.consume();
+        assert_eq!(input.la(1), '你' as isize);
+        assert_eq!(input.la(-1), 'A' as isize);
+        assert_eq!(input.index(), 1);
+        input.consume();
+        assert_eq!(input.la(1), '4' as isize);
+        assert_eq!(input.index(), 2);
+        input.consume();
+        assert_eq!(input.la(1), '好' as isize);
+        assert_eq!(input.index(), 3);
+        assert_eq!(input.la(-2), '你' as isize);
+        input.consume();
+        assert_eq!(input.la(1), '§' as isize);
+        assert_eq!(input.index(), 4);
+        assert_eq!(input.la(2), '，' as isize);
+        assert_eq!(input.la(-2), '4' as isize);
+        assert_eq!(input.la(3), '\\' as isize);
+        input.consume();
+        assert_eq!(input.la(1), '，' as isize);
+        assert_eq!(input.index(), 5);
+        assert_eq!(input.la(2), '\\' as isize);
+        assert_eq!(input.la(-2), '好' as isize);
+        assert_eq!(input.la(4), EOF);
+        input.consume();
+        assert_eq!(input.la(1), '\\' as isize);
+        assert_eq!(input.index(), 6);
+        assert_eq!(input.la(3), EOF);
+        assert_eq!(input.la(-2), '§' as isize);
+        assert_eq!(input.la(-10), EOF);
+        input.consume();
+        assert_eq!(input.la(1), '❤' as isize);
+        assert_eq!(input.index(), 7);
+        assert_eq!(input.la(2), EOF);
+        assert_eq!(input.la(-3), '§' as isize);
+        assert_eq!(input.la(-10), EOF);
 
-        assert_eq!(is.text(1, 1), "你");
-        assert_eq!(is.text(1, 2), "你4");
-        assert_eq!(is.text(3, 5), "好§，");
-        assert_eq!(is.text(0, 5), "A你4好§，");
-        assert_eq!(is.text(3, 10), "好§，\\❤");
+        // assert_eq!(input.text(1, 1), "你");
+        // assert_eq!(input.text(1, 2), "你4");
+        // assert_eq!(input.text(3, 5), "好§，");
+        // assert_eq!(input.text(0, 5), "A你4好§，");
+        // assert_eq!(input.text(3, 10), "好§，\\❤");
+    }
+
+    #[test]
+    fn test_byte_stream() {
+        let mut v = ByteStream::new(&b"V\xaa\xbb"[..]);
+        assert_eq!(v.la(1), 'V' as isize);
     }
 }

@@ -9,6 +9,7 @@ pub mod int_stream;
 pub mod token_stream;
 pub mod token_source;
 pub mod char_stream;
+mod code_point;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right
