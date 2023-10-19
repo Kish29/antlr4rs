@@ -1,8 +1,11 @@
 use std::cmp::min;
-use std::ops::Deref;
+use std::fmt::Display;
+use std::ops::{Deref, Index};
 use crate::char_stream::CharStream;
 use crate::code_point::CodePoints;
 use crate::int_stream::{EOF, IntStream};
+
+const INPUT_STREAM_SOURCE_NAME: &'static str = "source from string";
 
 pub struct InputStream<T> {
     index: isize,
@@ -19,7 +22,7 @@ impl<'a, T: ?Sized + CodePoints> InputStream<&'a T> {
     pub fn new(input: &'a T) -> Self {
         Self {
             index: 0,
-            size: input.len() as isize,
+            size: input.size() as isize,
             data: input,
         }
     }
@@ -66,7 +69,7 @@ impl<'a, T: Deref> IntStream for InputStream<T> where T::Target: CodePoints {
         if new_index < 0 || new_index >= self.size {
             return EOF;
         }
-        self.data.code_point_at(new_index).unwrap_or(EOF)
+        self.data.deref().code_point_at(new_index).unwrap_or(EOF)
     }
 
     /// mark/release do nothing; we have entire buffer
@@ -99,16 +102,15 @@ impl<'a, T: Deref> IntStream for InputStream<T> where T::Target: CodePoints {
 
     #[inline]
     fn source_name(&self) -> String {
-        self.name.clone()
+        INPUT_STREAM_SOURCE_NAME.to_string()
     }
 }
 
-impl<'a, T: Deref> CharStream<T> for InputStream<T> where T::Target: CodePoints {
+impl<'a, T: Deref> CharStream for InputStream<T> where T::Target: CodePoints {
     fn text(&self, start: usize, end: usize) -> String {
-        todo!()
+        self.data.deref().text_range(start, end)
     }
 }
-
 
 mod tests {
     use crate::char_stream::CharStream;
@@ -118,7 +120,7 @@ mod tests {
     #[test]
     fn test_input_stream() {
         let mut input = InputStream::new(r#"A你4好§，\❤"#);
-        let input = &mut input as &mut dyn CharStream<&str>;
+        let input = &mut input as &mut dyn CharStream;
         assert_eq!(input.size(), 8);
         assert_eq!(input.la(1), 'A' as isize);
         assert_eq!(input.index(), 0);
@@ -158,11 +160,11 @@ mod tests {
         assert_eq!(input.la(-3), '§' as isize);
         assert_eq!(input.la(-10), EOF);
 
-        // assert_eq!(input.text(1, 1), "你");
-        // assert_eq!(input.text(1, 2), "你4");
-        // assert_eq!(input.text(3, 5), "好§，");
-        // assert_eq!(input.text(0, 5), "A你4好§，");
-        // assert_eq!(input.text(3, 10), "好§，\\❤");
+        assert_eq!(input.text(1, 1), "你");
+        assert_eq!(input.text(1, 2), "你4");
+        assert_eq!(input.text(3, 5), "好§，");
+        assert_eq!(input.text(0, 5), "A你4好§，");
+        assert_eq!(input.text(3, 10), "好§，\\❤");
     }
 
     #[test]
@@ -203,6 +205,10 @@ mod tests {
         assert_eq!(v.index(), 4);
         v.consume();
         assert_eq!(v.la(1), EOF);
+        assert_eq!(v.text(1, 1), "¤");
+        assert_eq!(v.text(1, 2), "¤¥");
+        assert_eq!(v.text(3, 5), "¦§");
+        assert_eq!(v.text(0, 5), "£¤¥¦§");
     }
 
     #[test]

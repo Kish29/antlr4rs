@@ -1,6 +1,7 @@
 use crate::int_stream::IntStream;
 
-pub trait CharStream<T>: IntStream {
-    /// return the symbol of the interval `start`..`end`, include the symbol of `end`
+pub trait CharStream: IntStream {
+    /// This method returns the text for the interval `start`..`end` of characters within this input stream.
+    /// Guaranteed to not throw an exception
     fn text(&self, start: usize, end: usize) -> String;
 }

@@ -1,3 +1,4 @@
+use std::char::REPLACEMENT_CHARACTER;
 use std::fmt::{Debug, Formatter};
 use std::ops::{Index, Range, RangeFrom};
 
@@ -12,7 +13,11 @@ Index<Range<usize>, Output=Self>
     /// sting type must be indexed by the interpreter as the characters
     fn code_point_at(&self, pos: isize) -> Option<isize>;
 
-    fn len(&self) -> usize;
+    fn size(&self) -> usize;
+
+    /// returns the text for the interval `start`..`end` of characters within this CodePoints
+    /// include the end index, the symbol of each must convert to character
+    fn text_range(&self, start: usize, end: usize) -> String;
 }
 
 impl CodePoints for str {
@@ -28,13 +33,28 @@ impl CodePoints for str {
     }
 
     #[inline]
-    fn len(&self) -> usize {
+    fn size(&self) -> usize {
         self.chars().count()
+    }
+
+    #[inline]
+    fn text_range(&self, start: usize, mut end: usize) -> String {
+        let chars = self.chars();
+        let chars_len = chars.count();
+        if start > end || start >= chars_len {
+            return "".to_string();
+        }
+        if end >= chars_len {
+            // here -1 is order to get the character when start equal to end
+            end = chars_len - 1;
+        }
+        // here +1 is order to offset the + 1 below
+        self.chars().skip(start).take(end - start + 1).collect()
     }
 }
 
 /// T convert to `u32` and as `isize`, due to `isize` not implementation the trait `From<u16>`
-impl<T: Copy + Debug + Into<u32> + 'static> CodePoints for [T] {
+impl<T: Copy + Debug + Into<u32> + ToString + 'static> CodePoints for [T] {
     #[inline]
     fn code_point_at(&self, pos: isize) -> Option<isize> {
         if pos < 0 || pos >= self.len() as isize {
@@ -44,7 +64,22 @@ impl<T: Copy + Debug + Into<u32> + 'static> CodePoints for [T] {
     }
 
     #[inline]
-    fn len(&self) -> usize {
+    fn size(&self) -> usize {
         self.len()
+    }
+
+    #[inline]
+    fn text_range(&self, start: usize, mut end: usize) -> String {
+        if start > end || start >= self.len() {
+            return "".to_string();
+        }
+        if end >= self.len() {
+            end = self.len() - 1;
+        }
+        self.iter()
+            .skip(start)
+            .take(end - start + 1)
+            .map(|&v| char::from_u32(v.into()).unwrap_or(REPLACEMENT_CHARACTER))
+            .collect()
     }
 }
