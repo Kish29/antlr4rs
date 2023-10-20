@@ -1,13 +1,9 @@
-use std::io::BufRead;
-use std::ptr::eq;
 use criterion::{Criterion, criterion_group, criterion_main};
 use antlr4rs::char_stream::CharStream;
-use antlr4rs::input_stream::InputStream;
-
+use antlr4rs::input_stream::{from_str};
 
 fn create_input_stream() {
-    let mut input = InputStream::new(r#"A你4好§，\❤"#);
-    let input = &mut input as &mut dyn CharStream;
+    let input = &mut from_str(r#"A你4好§，\❤"#) as &mut dyn CharStream;
     assert_eq!(input.size(), 8);
     input.consume();
     input.consume();

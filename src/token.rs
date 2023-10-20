@@ -1,5 +1,4 @@
 use std::rc::Rc;
-use crate::char_stream::CharStream;
 use crate::int_stream;
 use crate::token_source::TokenSource;
 

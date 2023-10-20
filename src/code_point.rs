@@ -1,5 +1,5 @@
 use std::char::REPLACEMENT_CHARACTER;
-use std::fmt::{Debug, Formatter};
+use std::fmt::Debug;
 use std::ops::{Index, Range, RangeFrom};
 
 pub trait CodePoints:
@@ -54,7 +54,7 @@ impl CodePoints for str {
 }
 
 /// T convert to `u32` and as `isize`, due to `isize` not implementation the trait `From<u16>`
-impl<T: Copy + Debug + Into<u32> + ToString + 'static> CodePoints for [T] {
+impl<T: Copy + Debug + Into<u32> + 'static> CodePoints for [T] {
     #[inline]
     fn code_point_at(&self, pos: isize) -> Option<isize> {
         if pos < 0 || pos >= self.len() as isize {
