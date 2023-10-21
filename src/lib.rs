@@ -11,6 +11,19 @@ pub mod token_source;
 pub mod char_stream;
 mod code_point;
 
+mod atn_simulator;
+mod prediction_context;
+
+mod dfa;
+mod dfa_state;
+mod atn_config_set;
+mod atn_config;
+mod atn_state;
+mod token_factory;
+mod parser_rule_context;
+mod rule_context;
+mod val;
+
 pub fn add(left: usize, right: usize) -> usize {
     left + right
 }

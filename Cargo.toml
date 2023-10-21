@@ -6,10 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-
+lazy_static = "^1.4"
 
 [dev-dependencies]
-criterion = "0.5.1"
+criterion = "^0.5"
 
 [[bench]]
 name = "input_stream_bench"

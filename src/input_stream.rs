@@ -12,10 +12,10 @@ pub struct InputStream<T> {
     data: T,
 }
 
-type ByteStream<'a> = InputStream<&'a [u8]>;
-type CodePoint8BitStream<'a> = InputStream<&'a [u8]>;
-type CodePoint16BitStream<'a> = InputStream<&'a [u16]>;
-type CodePoint32BitStream<'a> = InputStream<&'a [u32]>;
+pub type ByteStream<'a> = InputStream<&'a [u8]>;
+pub type CodePoint8BitStream<'a> = InputStream<&'a [u8]>;
+pub type CodePoint16BitStream<'a> = InputStream<&'a [u16]>;
+pub type CodePoint32BitStream<'a> = InputStream<&'a [u32]>;
 
 impl<'a, T: ?Sized + CodePoints> InputStream<&'a T> {
     pub fn new(input: &'a T) -> Self {
@@ -25,31 +25,6 @@ impl<'a, T: ?Sized + CodePoints> InputStream<&'a T> {
             data: input,
         }
     }
-}
-
-/// create new [InputStream] from str
-pub fn from_str(s: &str) -> InputStream<&str> {
-    InputStream::new(s)
-}
-
-/// create new [InputStream] from slice of byte
-pub fn from_bytes(b: &[u8]) -> InputStream<&[u8]> {
-    ByteStream::new(b)
-}
-
-/// create new [InputStream] from slice of u8, equal to from_bytes
-pub fn from_u8s(u8s: &[u8]) -> InputStream<&[u8]> {
-    CodePoint8BitStream::new(u8s)
-}
-
-/// create new [InputStream] from slice of u16
-pub fn from_u16s(u16s: &[u16]) -> InputStream<&[u16]> {
-    CodePoint16BitStream::new(u16s)
-}
-
-/// create new [InputStream] from slice of u32
-pub fn from_u32s(u32s: &[u32]) -> InputStream<&[u32]> {
-    CodePoint32BitStream::new(u32s)
 }
 
 impl<'a, T: Deref> IntStream for InputStream<T> where T::Target: CodePoints {
@@ -131,6 +106,7 @@ impl<'a, T: Deref> IntStream for InputStream<T> where T::Target: CodePoints {
 }
 
 impl<'a, T: Deref> CharStream for InputStream<T> where T::Target: CodePoints {
+    #[inline]
     fn text(&self, start: usize, end: usize) -> String {
         self.data.deref().text_range(start, end)
     }

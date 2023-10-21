@@ -2,6 +2,8 @@ use std::char::REPLACEMENT_CHARACTER;
 use std::fmt::Debug;
 use std::ops::{Index, Range, RangeFrom};
 
+const TEXT_RANGE_EOF: &'static str = "<EOF>";
+
 pub trait CodePoints:
 Index<Range<usize>, Output=Self>
 + Index<RangeFrom<usize>, Output=Self>
@@ -17,6 +19,7 @@ Index<Range<usize>, Output=Self>
 
     /// returns the text for the interval `start`..`end` of characters within this CodePoints
     /// include the end index, the symbol of each must convert to character
+    /// must returns <EOF> if index out of range
     fn text_range(&self, start: usize, end: usize) -> String;
 }
 
@@ -42,7 +45,7 @@ impl CodePoints for str {
         let chars = self.chars();
         let chars_len = chars.count();
         if start > end || start >= chars_len {
-            return "".to_string();
+            return TEXT_RANGE_EOF.to_string();
         }
         if end >= chars_len {
             // here -1 is order to get the character when start equal to end
@@ -54,7 +57,7 @@ impl CodePoints for str {
 }
 
 /// T convert to `u32` and as `isize`, due to `isize` not implementation the trait `From<u16>`
-impl<T: Copy + Debug + Into<u32> + 'static> CodePoints for [T] {
+impl<T: ?Sized + Copy + Debug + Into<u32> + 'static> CodePoints for [T] {
     #[inline]
     fn code_point_at(&self, pos: isize) -> Option<isize> {
         if pos < 0 || pos >= self.len() as isize {
@@ -71,7 +74,7 @@ impl<T: Copy + Debug + Into<u32> + 'static> CodePoints for [T] {
     #[inline]
     fn text_range(&self, start: usize, mut end: usize) -> String {
         if start > end || start >= self.len() {
-            return "".to_string();
+            return TEXT_RANGE_EOF.to_string();
         }
         if end >= self.len() {
             end = self.len() - 1;

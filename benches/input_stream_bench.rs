@@ -1,9 +1,9 @@
 use criterion::{Criterion, criterion_group, criterion_main};
 use antlr4rs::char_stream::CharStream;
-use antlr4rs::input_stream::{from_str};
+use antlr4rs::input_stream::InputStream;
 
 fn create_input_stream() {
-    let input = &mut from_str(r#"A你4好§，\❤"#) as &mut dyn CharStream;
+    let input = &mut InputStream::new(r#"A你4好§，\❤"#) as &mut dyn CharStream;
     assert_eq!(input.size(), 8);
     input.consume();
     input.consume();
