@@ -1,5 +1,4 @@
 use std::borrow::Cow;
-use std::ops::Deref;
 use antlr4rs::input_stream::InputStream;
 use antlr4rs::rule_context::RuleContext;
 use antlr4rs::token::Token;

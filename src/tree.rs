@@ -1,5 +1,4 @@
 use std::borrow::Cow;
-use std::rc::Rc;
 use crate::rule_context::RuleContext;
 use crate::token::Token;
 use crate::val::Val;
