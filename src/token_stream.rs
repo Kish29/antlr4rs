@@ -1,5 +1,3 @@
 use crate::int_stream::IntStream;
 
-pub trait TokenStream: IntStream {
-
-}
+pub trait TokenStream<'a>: IntStream<'a> {}

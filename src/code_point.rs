@@ -1,10 +1,11 @@
+use std::borrow::Cow;
 use std::char::REPLACEMENT_CHARACTER;
 use std::fmt::Debug;
 use std::ops::{Index, Range, RangeFrom};
 
 const TEXT_RANGE_EOF: &'static str = "<EOF>";
 
-pub trait CodePoints:
+pub trait CodePoints<'a>:
 Index<Range<usize>, Output=Self>
 + Index<RangeFrom<usize>, Output=Self>
 + ToOwned
@@ -20,10 +21,10 @@ Index<Range<usize>, Output=Self>
     /// returns the text for the interval `start`..`end` of characters within this CodePoints
     /// include the end index, the symbol of each must convert to character
     /// must returns <EOF> if index out of range
-    fn text_range(&self, start: usize, end: usize) -> String;
+    fn text_range(&'a self, start: usize, end: usize) -> Cow<'a, str>;
 }
 
-impl CodePoints for str {
+impl<'a> CodePoints<'a> for str {
     #[inline]
     fn code_point_at(&self, pos: isize) -> Option<isize> {
         if pos < 0 || pos >= self.len() as isize {
@@ -41,23 +42,23 @@ impl CodePoints for str {
     }
 
     #[inline]
-    fn text_range(&self, start: usize, mut end: usize) -> String {
+    fn text_range(&'a self, start: usize, mut end: usize) -> Cow<'a, str> {
         let chars = self.chars();
         let chars_len = chars.count();
         if start > end || start >= chars_len {
-            return TEXT_RANGE_EOF.to_string();
+            return Cow::Borrowed(TEXT_RANGE_EOF);
         }
         if end >= chars_len {
             // here -1 is order to get the character when start equal to end
             end = chars_len - 1;
         }
         // here +1 is order to offset the + 1 below
-        self.chars().skip(start).take(end - start + 1).collect()
+        Cow::Owned(self.chars().skip(start).take(end - start + 1).collect())
     }
 }
 
 /// T convert to `u32` and as `isize`, due to `isize` not implementation the trait `From<u16>`
-impl<T: ?Sized + Copy + Debug + Into<u32> + 'static> CodePoints for [T] {
+impl<'a, T: ?Sized + Copy + Debug + Into<u32> + 'static> CodePoints<'a> for [T] {
     #[inline]
     fn code_point_at(&self, pos: isize) -> Option<isize> {
         if pos < 0 || pos >= self.len() as isize {
@@ -72,17 +73,18 @@ impl<T: ?Sized + Copy + Debug + Into<u32> + 'static> CodePoints for [T] {
     }
 
     #[inline]
-    fn text_range(&self, start: usize, mut end: usize) -> String {
+    fn text_range(&'a self, start: usize, mut end: usize) -> Cow<'a, str> {
         if start > end || start >= self.len() {
-            return TEXT_RANGE_EOF.to_string();
+            return Cow::Borrowed(TEXT_RANGE_EOF);
         }
         if end >= self.len() {
             end = self.len() - 1;
         }
-        self.iter()
+        let str: String = self.iter()
             .skip(start)
             .take(end - start + 1)
             .map(|&v| char::from_u32(v.into()).unwrap_or(REPLACEMENT_CHARACTER))
-            .collect()
+            .collect();
+        Cow::Owned(str)
     }
 }

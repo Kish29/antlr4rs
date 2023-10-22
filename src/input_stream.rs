@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::cmp::min;
 use std::ops::Deref;
 use crate::char_stream::CharStream;
@@ -17,7 +18,7 @@ pub type CodePoint8BitStream<'a> = InputStream<&'a [u8]>;
 pub type CodePoint16BitStream<'a> = InputStream<&'a [u16]>;
 pub type CodePoint32BitStream<'a> = InputStream<&'a [u32]>;
 
-impl<'a, T: ?Sized + CodePoints> InputStream<&'a T> {
+impl<'a, T: ?Sized + CodePoints<'a>> InputStream<&'a T> {
     pub fn new(input: &'a T) -> Self {
         Self {
             index: 0,
@@ -27,7 +28,7 @@ impl<'a, T: ?Sized + CodePoints> InputStream<&'a T> {
     }
 }
 
-impl<'a, T: Deref> IntStream for InputStream<T> where T::Target: CodePoints {
+impl<'a, T: Deref> IntStream<'a> for InputStream<T> where T::Target: CodePoints<'a> {
     #[inline]
     /// Consume(read) one char(rune)
     fn consume(&mut self) {
@@ -100,14 +101,14 @@ impl<'a, T: Deref> IntStream for InputStream<T> where T::Target: CodePoints {
     }
 
     #[inline]
-    fn source_name(&self) -> String {
-        INPUT_STREAM_SOURCE_NAME.to_string()
+    fn source_name(&'a self) -> Cow<'a, str> {
+        Cow::Borrowed(INPUT_STREAM_SOURCE_NAME)
     }
 }
 
-impl<'a, T: Deref> CharStream for InputStream<T> where T::Target: CodePoints {
+impl<'a, T: Deref> CharStream<'a> for InputStream<T> where T::Target: CodePoints<'a> {
     #[inline]
-    fn text(&self, start: usize, end: usize) -> String {
+    fn text(&'a self, start: usize, end: usize) -> Cow<'a, str> {
         self.data.deref().text_range(start, end)
     }
 }

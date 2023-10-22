@@ -11,11 +11,11 @@ lazy_static! {
 }
 
 pub trait TokenFactory<'a> {
-    type TK: Token + Clone + ?Sized + 'a;
+    type TK: Token<'a> + Clone + ?Sized;
 
     fn create<S>(
         &'a self,
-        stream: &mut S,
+        stream: &'a mut S,
         token_type: isize,
         text: Option<String>,
         channel: isize,
@@ -23,7 +23,7 @@ pub trait TokenFactory<'a> {
         stop: isize,
         line: isize,
         column: isize,
-    ) -> Self::TK where S: CharStream;
+    ) -> Self::TK where S: CharStream<'a>;
 }
 
 #[derive(Default)]
@@ -41,7 +41,7 @@ impl<'a> TokenFactory<'a> for CommonTokenFactory {
     #[inline]
     fn create<S>(
         &'a self,
-        stream: &mut S,
+        stream: &'a mut S,
         token_type: isize,
         text: Option<String>,
         channel: isize,
@@ -49,7 +49,7 @@ impl<'a> TokenFactory<'a> for CommonTokenFactory {
         stop: isize,
         line: isize,
         column: isize,
-    ) -> Self::TK where S: CharStream {
+    ) -> Self::TK where S: CharStream<'a> {
         BaseToken::new(
             token_type,
             channel,
@@ -59,7 +59,7 @@ impl<'a> TokenFactory<'a> for CommonTokenFactory {
             line,
             column,
             if let Some(t) = text { t } else {
-                stream.text(start as usize, stop as usize)
+                stream.text(start as usize, stop as usize).to_string()
             },
             false,
         )

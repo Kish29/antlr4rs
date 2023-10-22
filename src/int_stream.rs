@@ -1,6 +1,8 @@
+use std::borrow::Cow;
+
 pub const EOF: isize = -1;
 
-pub trait IntStream {
+pub trait IntStream<'a> {
     fn consume(&mut self);
 
     /// Gets the value of the symbol at offset i from the current position.
@@ -28,5 +30,5 @@ pub trait IntStream {
 
     fn size(&self) -> isize;
 
-    fn source_name(&self) -> String;
+    fn source_name(&'a self) -> Cow<'a, str>;
 }

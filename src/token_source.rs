@@ -1,6 +1,3 @@
-use std::rc::Rc;
-use crate::token::Token;
-
 /// A source of tokens must provide a sequence of tokens via `next_token()`
 //  and also must reveal it's source of characters; {@link CommonToken}'s text is
 //  computed from a {@link CharStream}; it only store indices into the char
