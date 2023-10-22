@@ -45,6 +45,9 @@ impl<'a> CodePoints<'a> for str {
     fn text_range(&'a self, start: usize, mut end: usize) -> Cow<'a, str> {
         let chars = self.chars();
         let chars_len = chars.count();
+        if start == 0 && end == chars_len {
+            return Cow::Borrowed(self);
+        }
         if start > end || start >= chars_len {
             return Cow::Borrowed(TEXT_RANGE_EOF);
         }
