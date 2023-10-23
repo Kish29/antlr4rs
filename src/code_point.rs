@@ -13,7 +13,7 @@ pub trait CodePoints<'a> {
 
     /// returns the text for the interval `start`..`end` of characters within this CodePoints
     /// include the end index, the symbol of each must convert to character
-    /// must returns <EOF> if index out of range
+    /// must returns "<EOF>" if index out of range
     fn text_range(&'a self, start: usize, end: usize) -> Cow<'a, str>;
 }
 
@@ -39,9 +39,9 @@ impl<'a> CodePoints<'a> for String {
         if end >= self.len() {
             end = self.len() - 1;
         }
-        // first, find the byte index of the `start`
+        // first, find the byte index of the char index `start`.
         let byte_idx_start = byte_idx_by_chars_pass_through(self, 0, start);
-        // second,
+        // second, find the byte index of the char index `end`.
         let byte_idx_end = byte_idx_by_chars_pass_through(self, byte_idx_start, end - start + 1);
         Cow::Borrowed(&self[byte_idx_start..byte_idx_end])
     }
