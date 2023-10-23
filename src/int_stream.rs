@@ -20,10 +20,6 @@ pub trait IntStream<'a> {
     /// Return `EOF` if `i` points to position at or beyond the end of the stream
     fn la(&mut self, i: isize) -> isize;
 
-    fn mark(&mut self) -> isize;
-
-    fn release(&mut self, marker: isize);
-
     fn index(&self) -> isize;
 
     fn seek(&mut self, index: isize);

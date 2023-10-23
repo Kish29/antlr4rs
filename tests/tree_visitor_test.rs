@@ -97,6 +97,6 @@ fn test_tree_visitor() {
     let mut input = InputStream::new("input stream in test");
 
     let tf: CommonTokenFactory = Default::default();
-    let tk = tf.create(&mut input, 1, None, 1, 0, 0, 0, 0);
+    let tk = tf.create(&mut input, 1, None, 1, 0, 4, 0, 0);
     println!("{:?}", tk.text());
 }

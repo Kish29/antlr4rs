@@ -3,7 +3,8 @@ use antlr4rs::char_stream::CharStream;
 use antlr4rs::input_stream::InputStream;
 
 fn str_input_stream() {
-    let input = &mut InputStream::new(r#"A你4好§，\❤"#) as &mut dyn CharStream;
+    let mut input = InputStream::new(r#"A你4好§，\❤"#.to_string());
+    let input = &mut input as &mut dyn CharStream;
     assert_eq!(input.size(), 8);
     input.consume();
     input.consume();

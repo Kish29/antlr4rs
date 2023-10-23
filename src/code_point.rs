@@ -1,20 +1,13 @@
 use std::borrow::Cow;
 use std::char::REPLACEMENT_CHARACTER;
 use std::fmt::Debug;
-use std::ops::{Index, Range, RangeFrom};
 
 const TEXT_RANGE_EOF: &'static str = "<EOF>";
 
-pub trait CodePoints<'a>:
-Index<Range<usize>, Output=Self>
-+ Index<RangeFrom<usize>, Output=Self>
-+ ToOwned
-+ Debug
-+ 'static
-{
-    /// code point at the `pos` of the code points container
+pub trait CodePoints<'a> {
+    /// code point at the `pos` of [CodePoints] and try to convert to [u32].
     /// sting type must be indexed by the interpreter as the characters
-    fn code_point_at(&self, pos: isize) -> Option<isize>;
+    fn code_point_at(&self, pos: usize) -> Option<u32>;
 
     fn size(&self) -> usize;
 
@@ -24,16 +17,13 @@ Index<Range<usize>, Output=Self>
     fn text_range(&'a self, start: usize, end: usize) -> Cow<'a, str>;
 }
 
-impl<'a> CodePoints<'a> for str {
+impl<'a> CodePoints<'a> for String {
     #[inline]
-    fn code_point_at(&self, pos: isize) -> Option<isize> {
-        if pos < 0 || pos >= self.len() as isize {
+    fn code_point_at(&self, pos: usize) -> Option<u32> {
+        if pos >= self.len() {
             return None;
         }
-        if let Some(ch) = self.chars().nth(pos as usize) {
-            return Some(ch as isize);
-        }
-        None
+        Some(self.chars().nth(pos).unwrap_or(REPLACEMENT_CHARACTER) as u32)
     }
 
     #[inline]
@@ -43,31 +33,28 @@ impl<'a> CodePoints<'a> for str {
 
     #[inline]
     fn text_range(&'a self, start: usize, mut end: usize) -> Cow<'a, str> {
-        let chars = self.chars();
-        let chars_len = chars.count();
-        if start == 0 && end == chars_len {
-            return Cow::Borrowed(self);
-        }
-        if start > end || start >= chars_len {
+        if start > end || start >= self.len() {
             return Cow::Borrowed(TEXT_RANGE_EOF);
         }
-        if end >= chars_len {
-            // here -1 is order to get the character when start equal to end
-            end = chars_len - 1;
+        if end >= self.len() {
+            end = self.len() - 1;
         }
-        // here +1 is order to offset the + 1 below
-        Cow::Owned(self.chars().skip(start).take(end - start + 1).collect())
+        // first, find the byte index of the `start`
+        let byte_idx_start = byte_idx_by_chars_pass_through(self, 0, start);
+        // second,
+        let byte_idx_end = byte_idx_by_chars_pass_through(self, byte_idx_start, end - start + 1);
+        Cow::Borrowed(&self[byte_idx_start..byte_idx_end])
     }
 }
 
 /// T convert to `u32` and as `isize`, due to `isize` not implementation the trait `From<u16>`
-impl<'a, T: ?Sized + Copy + Debug + Into<u32> + 'static> CodePoints<'a> for [T] {
+impl<'a, T: ?Sized + Copy + Debug + Into<u32> + 'static> CodePoints<'a> for Vec<T> {
     #[inline]
-    fn code_point_at(&self, pos: isize) -> Option<isize> {
-        if pos < 0 || pos >= self.len() as isize {
+    fn code_point_at(&self, pos: usize) -> Option<u32> {
+        if pos >= self.len() {
             return None;
         }
-        Some(self[pos as usize].into() as isize)
+        Some(self[pos].into())
     }
 
     #[inline]
@@ -90,4 +77,27 @@ impl<'a, T: ?Sized + Copy + Debug + Into<u32> + 'static> CodePoints<'a> for [T] 
             .collect();
         Cow::Owned(str)
     }
+}
+
+/// convert the char index: get the byte index from byte index: `start_char_byte_idx` and pass through `chars_num`
+fn byte_idx_by_chars_pass_through(s: &str, start_char_byte_idx: usize, mut chars_num: usize) -> usize {
+    let s_len = s.len();
+    if start_char_byte_idx >= s_len {
+        panic!("[byte_idx_by_chars_pass_through] index out of range, it could not happen. It is a bug.")
+    }
+    let mut ptr = start_char_byte_idx;
+    // loop until ptr pass through the `chars_num` of string.
+    loop {
+        if chars_num <= 0 {
+            break;
+        }
+        ptr += 1;
+        if ptr >= s_len {
+            break;
+        }
+        if s.is_char_boundary(ptr) {
+            chars_num -= 1;
+        }
+    }
+    ptr
 }

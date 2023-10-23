@@ -1,6 +1,5 @@
 use std::borrow::Cow;
 use std::cmp::min;
-use std::ops::Deref;
 use crate::char_stream::CharStream;
 use crate::code_point::CodePoints;
 use crate::int_stream::{EOF, IntStream};
@@ -13,13 +12,14 @@ pub struct InputStream<T> {
     data: T,
 }
 
-pub type ByteStream<'a> = InputStream<&'a [u8]>;
-pub type CodePoint8BitStream<'a> = InputStream<&'a [u8]>;
-pub type CodePoint16BitStream<'a> = InputStream<&'a [u16]>;
-pub type CodePoint32BitStream<'a> = InputStream<&'a [u32]>;
+pub type ByteStream = InputStream<Vec<u8>>;
+pub type CodePoint8BitStream = InputStream<Vec<u8>>;
+pub type CodePoint16BitStream = InputStream<Vec<u16>>;
+pub type CodePoint32BitStream = InputStream<Vec<u32>>;
 
-impl<'a, T: ?Sized + CodePoints<'a>> InputStream<&'a T> {
-    pub fn new(input: &'a T) -> Self {
+impl<'a, T: CodePoints<'a>> InputStream<T> {
+    /// returns a new [InputStream] and owned/clone the data from the `input`
+    pub fn new(input: T) -> Self {
         Self {
             index: 0,
             size: input.size() as isize,
@@ -28,7 +28,7 @@ impl<'a, T: ?Sized + CodePoints<'a>> InputStream<&'a T> {
     }
 }
 
-impl<'a, T: Deref> IntStream<'a> for InputStream<T> where T::Target: CodePoints<'a> {
+impl<'a, T: CodePoints<'a>> IntStream<'a> for InputStream<T> {
     #[inline]
     /// Consume(read) one char(rune)
     fn consume(&mut self) {
@@ -69,17 +69,11 @@ impl<'a, T: Deref> IntStream<'a> for InputStream<T> where T::Target: CodePoints<
         if new_index < 0 || new_index >= self.size {
             return EOF;
         }
-        self.data.deref().code_point_at(new_index).unwrap_or(EOF)
+        if let Some(c) = self.data.code_point_at(new_index as usize) {
+            return c as isize;
+        }
+        EOF
     }
-
-    /// mark/release do nothing; we have entire buffer
-    #[inline]
-    fn mark(&mut self) -> isize {
-        -1
-    }
-
-    #[inline]
-    fn release(&mut self, _marker: isize) {}
 
     #[inline]
     fn index(&self) -> isize {
@@ -106,9 +100,9 @@ impl<'a, T: Deref> IntStream<'a> for InputStream<T> where T::Target: CodePoints<
     }
 }
 
-impl<'a, T: Deref> CharStream<'a> for InputStream<T> where T::Target: CodePoints<'a> {
+impl<'a, T: CodePoints<'a>> CharStream<'a> for InputStream<T> {
     #[inline]
     fn text(&'a self, start: usize, end: usize) -> Cow<'a, str> {
-        self.data.deref().text_range(start, end)
+        self.data.text_range(start, end)
     }
 }
