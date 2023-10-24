@@ -6,7 +6,7 @@ use crate::int_stream::{EOF, IntStream};
 
 const INPUT_STREAM_SOURCE_NAME: &'static str = "source from string";
 
-pub(crate) struct InputStream<T> {
+pub struct InputStream<T> {
     index: isize,
     size: isize,
     data: T,
