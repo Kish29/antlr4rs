@@ -1,10 +1,10 @@
 use antlr4rs::char_stream::CharStream;
-use antlr4rs::input_stream::{ByteStream, CodePoint16BitStream, CodePoint32BitStream, CodePoint8BitStream, InputStream};
+use antlr4rs::input_stream::{StringStream, ByteStream, CodePoint16BitStream, CodePoint32BitStream, CodePoint8BitStream};
 use antlr4rs::int_stream::EOF;
 
 #[test]
 fn test_input_stream() {
-    let mut input = InputStream::new(r#"A你4好§，\❤"#.to_string());
+    let mut input = StringStream::new(r#"A你4好§，\❤"#.to_string());
     let input = &mut input as &mut dyn CharStream;
     assert_eq!(input.size(), 8);
     assert_eq!(input.la(1), 'A' as isize);

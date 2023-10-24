@@ -6,12 +6,13 @@ use crate::int_stream::{EOF, IntStream};
 
 const INPUT_STREAM_SOURCE_NAME: &'static str = "source from string";
 
-pub struct InputStream<T> {
+pub(crate) struct InputStream<T> {
     index: isize,
     size: isize,
     data: T,
 }
 
+pub type StringStream = InputStream<String>;
 pub type ByteStream = InputStream<Vec<u8>>;
 pub type CodePoint8BitStream = InputStream<Vec<u8>>;
 pub type CodePoint16BitStream = InputStream<Vec<u16>>;
