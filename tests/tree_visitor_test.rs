@@ -1,5 +1,5 @@
 use std::borrow::Cow;
-use antlr4rs::input_stream::InputStream;
+use antlr4rs::input_stream::StringStream;
 use antlr4rs::rule_context::RuleContext;
 use antlr4rs::token::Token;
 use antlr4rs::token_factory::{CommonTokenFactory, TokenFactory};
@@ -94,7 +94,7 @@ fn test_tree_visitor() {
     println!("{:?}", mptv.visit_err_node(&mut mpt as &mut dyn ErrorNode));
     println!("{:?}", mpt.text());
 
-    let mut input = InputStream::new("input stream in test");
+    let mut input = StringStream::new("input stream in test".to_string());
 
     let tf: CommonTokenFactory = Default::default();
     let tk = tf.create(&mut input, 1, None, 1, 0, 4, 0, 0);

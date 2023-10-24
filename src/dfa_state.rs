@@ -1,8 +1,9 @@
+use std::rc::Rc;
 use crate::atn_config_set::ATNConfigSet;
 
 pub struct DFAState {
 
     pub(crate) state_number: usize,
-    configs: Box<ATNConfigSet>,
+    pub(crate) configs: Rc<ATNConfigSet>,
 
 }

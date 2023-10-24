@@ -4,7 +4,7 @@ use std::fmt::Debug;
 
 const TEXT_RANGE_EOF: &'static str = "<EOF>";
 
-pub trait CodePoints<'a> {
+pub trait CodePoints {
     /// code point at the `pos` of [CodePoints] and try to convert to [u32].
     /// sting type must be indexed by the interpreter as the characters
     fn code_point_at(&self, pos: usize) -> Option<u32>;
@@ -14,10 +14,10 @@ pub trait CodePoints<'a> {
     /// returns the text for the interval `start`..`end` of characters within this CodePoints
     /// include the end index, the symbol of each must convert to character
     /// must returns "<EOF>" if index out of range
-    fn text_range(&'a self, start: usize, end: usize) -> Cow<'a, str>;
+    fn text_range(&self, start: usize, end: usize) -> Cow<'_, str>;
 }
 
-impl<'a> CodePoints<'a> for String {
+impl CodePoints for String {
     #[inline]
     fn code_point_at(&self, pos: usize) -> Option<u32> {
         if pos >= self.len() {
@@ -32,7 +32,7 @@ impl<'a> CodePoints<'a> for String {
     }
 
     #[inline]
-    fn text_range(&'a self, start: usize, mut end: usize) -> Cow<'a, str> {
+    fn text_range(&self, start: usize, mut end: usize) -> Cow<'_, str> {
         if start > end || start >= self.len() {
             return Cow::Borrowed(TEXT_RANGE_EOF);
         }
@@ -48,7 +48,7 @@ impl<'a> CodePoints<'a> for String {
 }
 
 /// T convert to `u32` and as `isize`, due to `isize` not implementation the trait `From<u16>`
-impl<'a, T: ?Sized + Copy + Debug + Into<u32> + 'static> CodePoints<'a> for Vec<T> {
+impl<T: ?Sized + Copy + Debug + Into<u32>> CodePoints for Vec<T> {
     #[inline]
     fn code_point_at(&self, pos: usize) -> Option<u32> {
         if pos >= self.len() {
@@ -63,7 +63,7 @@ impl<'a, T: ?Sized + Copy + Debug + Into<u32> + 'static> CodePoints<'a> for Vec<
     }
 
     #[inline]
-    fn text_range(&'a self, start: usize, mut end: usize) -> Cow<'a, str> {
+    fn text_range(&self, start: usize, mut end: usize) -> Cow<'_, str> {
         if start > end || start >= self.len() {
             return Cow::Borrowed(TEXT_RANGE_EOF);
         }

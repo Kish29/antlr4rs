@@ -6,6 +6,8 @@ use crate::int_stream::{EOF, IntStream};
 
 const INPUT_STREAM_SOURCE_NAME: &'static str = "source from string";
 
+/// [InputStream] is the implementation for [CharStream], only visual in lib.
+/// we do not expect to export this struct to pub
 pub struct InputStream<T> {
     index: isize,
     size: isize,
@@ -18,7 +20,7 @@ pub type CodePoint8BitStream = InputStream<Vec<u8>>;
 pub type CodePoint16BitStream = InputStream<Vec<u16>>;
 pub type CodePoint32BitStream = InputStream<Vec<u32>>;
 
-impl<'a, T: CodePoints<'a>> InputStream<T> {
+impl<T: CodePoints> InputStream<T> {
     /// returns a new [InputStream] and owned/clone the data from the `input`
     pub fn new(input: T) -> Self {
         Self {
@@ -29,7 +31,7 @@ impl<'a, T: CodePoints<'a>> InputStream<T> {
     }
 }
 
-impl<'a, T: CodePoints<'a>> IntStream<'a> for InputStream<T> {
+impl<T: CodePoints> IntStream for InputStream<T> {
     #[inline]
     /// Consume(read) one char(rune)
     fn consume(&mut self) {
@@ -96,14 +98,14 @@ impl<'a, T: CodePoints<'a>> IntStream<'a> for InputStream<T> {
     }
 
     #[inline]
-    fn source_name(&'a self) -> Cow<'a, str> {
+    fn source_name(&self) -> Cow<'_, str> {
         Cow::Borrowed(INPUT_STREAM_SOURCE_NAME)
     }
 }
 
-impl<'a, T: CodePoints<'a>> CharStream<'a> for InputStream<T> {
+impl<T: CodePoints> CharStream for InputStream<T> {
     #[inline]
-    fn text(&'a self, start: usize, end: usize) -> Cow<'a, str> {
+    fn text(&self, start: usize, end: usize) -> Cow<'_, str> {
         self.data.text_range(start, end)
     }
 }

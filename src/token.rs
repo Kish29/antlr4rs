@@ -39,7 +39,7 @@ pub const TOKEN_HIDDEN_CHANNEL: isize = 1;
  */
 pub const TOKEN_MIN_USER_CHANNEL_VALUE: isize = 2;
 
-pub trait Token<'a> {
+pub trait Token {
     /// Get the type of the token */
     fn token_type(&self) -> isize;
 
@@ -63,7 +63,7 @@ pub trait Token<'a> {
     fn column(&self) -> isize { 0 }
 
     /// Get the text of the token.
-    fn text(&'a self) -> Cow<'a, str>;
+    fn text(&self) -> Cow<'_, str>;
 
     /// An index from 0..n-1 of the token object in the input stream.
     /// This must be valid in order to print token streams and
@@ -113,14 +113,14 @@ impl BaseToken {
     }
 }
 
-impl<'a> Token<'a> for BaseToken {
+impl Token for BaseToken {
     #[inline]
     fn token_type(&self) -> isize {
         self.token_type
     }
 
     #[inline]
-    fn text(&'a self) -> Cow<'a, str> {
+    fn text(&self) -> Cow<'_, str> {
         Cow::Borrowed(self.text.as_str())
     }
 

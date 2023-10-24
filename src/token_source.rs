@@ -11,7 +11,7 @@
 //  you should not throw an exception to the parser--it has already requested a
 //  token. Keep lexing until you get a valid one. Just report errors and keep
 //  going, looking for a valid token.</p>
-pub trait TokenSource<'a> {
+pub trait TokenSource {
     // fn next_token(&mut self) -> Option<Rc<dyn Token>>;
 
     fn line(&self) -> isize;
