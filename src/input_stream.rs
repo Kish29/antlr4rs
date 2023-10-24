@@ -12,6 +12,7 @@ pub struct InputStream<T> {
     data: T,
 }
 
+pub type StringStream = InputStream<String>;
 pub type ByteStream = InputStream<Vec<u8>>;
 pub type CodePoint8BitStream = InputStream<Vec<u8>>;
 pub type CodePoint16BitStream = InputStream<Vec<u16>>;
