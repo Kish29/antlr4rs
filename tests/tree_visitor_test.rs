@@ -1,32 +1,33 @@
 use std::borrow::Cow;
+use std::ops::Deref;
 use antlr4rs::input_stream::StringStream;
 use antlr4rs::rule_context::RuleContext;
-use antlr4rs::token::Token;
+use antlr4rs::token::{BaseToken, Token};
 use antlr4rs::token_factory::{CommonTokenFactory, TokenFactory};
 use antlr4rs::tree::{ErrorNode, ParseTree, ParseTreeVisitor, RuleNode, SyntaxTree, TerminalNode, Tree};
-use antlr4rs::val::Number::{Int, UInt};
-use antlr4rs::val::{Object, Val};
-use antlr4rs::val::Val::{Arr, Bool, Num, Obj, Str};
+use antlr4rs::value::Number::{Int, UInt};
+use antlr4rs::value::{Object, Value};
+use antlr4rs::value::Value::{Arr, Bool, Num, Obj, Str};
 
 struct MyParseTree {
     text: String,
 }
 
-impl<'a> ErrorNode<'a> for MyParseTree {}
+impl ErrorNode for MyParseTree {}
 
-impl<'a> TerminalNode<'a> for MyParseTree {
-    fn symbol(&mut self) -> &mut dyn Token {
+impl TerminalNode for MyParseTree {
+    fn symbol<TK: Token>(&self) -> &TK {
         todo!()
     }
 }
 
-impl<'a> RuleNode<'a> for MyParseTree {
-    fn rule_context(&mut self) -> &mut dyn RuleContext {
+impl RuleNode for MyParseTree {
+    fn rule_context<Ctx: RuleContext>(&self) -> &Ctx {
         todo!()
     }
 }
 
-impl<'a> SyntaxTree<'a> for MyParseTree {
+impl SyntaxTree for MyParseTree {
     fn source_start(&self) -> isize {
         0
     }
@@ -36,12 +37,12 @@ impl<'a> SyntaxTree<'a> for MyParseTree {
     }
 }
 
-impl<'a> Tree<'a> for MyParseTree {
-    fn payload(&self) -> Option<&mut dyn Tree> {
+impl Tree for MyParseTree {
+    fn payload<T: Tree>(&self) -> Option<&T> {
         None
     }
 
-    fn child(&self, i: isize) -> Option<&mut dyn Tree> {
+    fn child<T: Tree>(&self, i: isize) -> Option<&T> {
         None
     }
 
@@ -50,48 +51,50 @@ impl<'a> Tree<'a> for MyParseTree {
     }
 }
 
-impl<'a> ParseTree<'a> for MyParseTree {
-    fn accept(&mut self, visitor: &mut dyn ParseTreeVisitor) -> Val {
-        visitor.visit(self as &mut dyn Tree)
+impl ParseTree for MyParseTree {
+    fn accept<Ptv: ParseTreeVisitor>(&self, visitor: &Ptv) -> Ptv::Val {
+        visitor.visit(self)
     }
 
-    fn text(&'a mut self) -> Cow<'a, str> {
+    fn text(&self) -> Cow<'_, str> {
         Cow::Borrowed(self.text.as_str())
     }
 }
 
 struct MyParseTreeVisitor {}
 
-impl<'a> ParseTreeVisitor<'a> for MyParseTreeVisitor {
-    fn visit(&mut self, tree: &mut dyn Tree) -> Val {
+impl ParseTreeVisitor for MyParseTreeVisitor {
+    type Val = Value;
+
+    fn visit<T: Tree>(&self, tree: &T) -> Self::Val {
         Str("visit".to_string())
     }
 
-    fn visit_children(&mut self, node: &mut dyn RuleNode) -> Val {
+    fn visit_children<R: RuleNode>(&self, node: &R) -> Self::Val {
         Arr(vec![Str("1".to_string()), Bool(true), Num(Int(128))])
     }
 
-    fn visit_terminal(&mut self, node: &mut dyn TerminalNode) -> Val {
+    fn visit_terminal<TN: TerminalNode>(&self, node: &TN) -> Self::Val {
         let mut obj = Object::new();
         obj.insert("name".to_string(), Str("Jack".to_string()));
         obj.insert("age".to_string(), Num(UInt(24)));
         Obj(obj)
     }
 
-    fn visit_err_node(&mut self, node: &mut dyn ErrorNode) -> Val {
+    fn visit_err_node<E: ErrorNode>(&self, node: &E) -> Self::Val {
         Num(UInt(128))
     }
 }
 
 #[test]
 fn test_tree_visitor() {
-    let mut mpt = MyParseTree { text: "my parse tree visitor. :)".to_string() };
-    let mut mptv = MyParseTreeVisitor {};
-    println!("{:?}", mpt.accept(&mut mptv));
-    println!("{:?}", mptv.visit(&mut mpt));
-    println!("{:?}", mptv.visit_children(&mut mpt as &mut dyn RuleNode));
-    println!("{:?}", mptv.visit_terminal(&mut mpt as &mut dyn TerminalNode));
-    println!("{:?}", mptv.visit_err_node(&mut mpt as &mut dyn ErrorNode));
+    let mpt = MyParseTree { text: "my parse tree visitor. :)".to_string() };
+    let mptv = MyParseTreeVisitor {};
+    println!("{:?}", mpt.accept(&mptv));
+    println!("{:?}", mptv.visit(&mpt));
+    println!("{:?}", mptv.visit_children(&mpt));
+    println!("{:?}", mptv.visit_terminal(&mpt));
+    println!("{:?}", mptv.visit_err_node(&mpt));
     println!("{:?}", mpt.text());
 
     let mut input = StringStream::new("input stream in test".to_string());

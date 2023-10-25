@@ -1,5 +1,4 @@
 use std::borrow::Cow;
-use crate::input_stream::{ByteStream, CodePoint16BitStream, CodePoint32BitStream, CodePoint8BitStream, StringStream};
 use crate::int_stream::IntStream;
 
 /// [CharStream] is a stream type that can be indexed by one interval and return data as string.
