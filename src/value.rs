@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
+use crate::atn_type::ATNType::Parser;
 use crate::value::Number::{Float, Int, UInt};
 use crate::value::Value::{Bool, Num, Str};
 
@@ -108,6 +109,38 @@ impl Value {
         match self {
             Bool(b) => Some(b),
             _ => None
+        }
+    }
+
+    #[inline]
+    pub fn must_i64(self) -> i64 {
+        match self.to_i64() {
+            Some(n) => n,
+            None => panic!("value can not convert to i64"),
+        }
+    }
+
+    #[inline]
+    pub fn must_u64(self) -> u64 {
+        match self.to_u64() {
+            Some(n) => n,
+            None => panic!("value can not convert to u64")
+        }
+    }
+
+    #[inline]
+    pub fn must_f64(self) -> f64 {
+        match self.to_f64() {
+            Some(n) => n,
+            None => panic!("value can not convert to f64")
+        }
+    }
+
+    #[inline]
+    pub fn must_bool(self) -> bool {
+        match self {
+            Bool(b) => b,
+            _ => panic!("value can not convert to bool")
         }
     }
 
