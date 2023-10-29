@@ -24,6 +24,7 @@ pub mod value;
 pub mod lexer_atn_simulator;
 pub mod error_listener;
 pub mod errors;
+mod lexer_action;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right
