@@ -1,13 +1,12 @@
 use std::borrow::Cow;
-use std::ops::Deref;
 use antlr4rs::input_stream::StringStream;
 use antlr4rs::rule_context::RuleContext;
-use antlr4rs::token::{BaseToken, Token};
+use antlr4rs::token::Token;
 use antlr4rs::token_factory::{CommonTokenFactory, TokenFactory};
 use antlr4rs::tree::{ErrorNode, ParseTree, ParseTreeVisitor, RuleNode, SyntaxTree, TerminalNode, Tree};
 use antlr4rs::value::Number::{Int, UInt};
-use antlr4rs::value::{Object, Value};
-use antlr4rs::value::Value::{Arr, Bool, Num, Obj, Str};
+use antlr4rs::value::{Object, Val};
+use antlr4rs::value::Val::{Arr, Bool, Num, Obj, Str};
 
 struct MyParseTree {
     text: String,
@@ -16,13 +15,13 @@ struct MyParseTree {
 impl ErrorNode for MyParseTree {}
 
 impl TerminalNode for MyParseTree {
-    fn symbol<TK: Token>(&self) -> &TK {
+    fn symbol(&self) -> &dyn Token {
         todo!()
     }
 }
 
 impl RuleNode for MyParseTree {
-    fn rule_context<Ctx: RuleContext>(&self) -> &Ctx {
+    fn rule_context(&self) -> &dyn RuleContext {
         todo!()
     }
 }
@@ -38,11 +37,11 @@ impl SyntaxTree for MyParseTree {
 }
 
 impl Tree for MyParseTree {
-    fn payload<T: Tree>(&self) -> Option<&T> {
+    fn payload(&self) -> Option<&dyn Tree> {
         None
     }
 
-    fn child<T: Tree>(&self, i: isize) -> Option<&T> {
+    fn child(&self, i: isize) -> Option<&dyn Tree> {
         None
     }
 
@@ -52,7 +51,7 @@ impl Tree for MyParseTree {
 }
 
 impl ParseTree for MyParseTree {
-    fn accept<Ptv: ParseTreeVisitor>(&self, visitor: &Ptv) -> Ptv::Val {
+    fn accept(&self, visitor: &dyn ParseTreeVisitor) -> Val {
         visitor.visit(self)
     }
 
@@ -64,24 +63,22 @@ impl ParseTree for MyParseTree {
 struct MyParseTreeVisitor {}
 
 impl ParseTreeVisitor for MyParseTreeVisitor {
-    type Val = Value;
-
-    fn visit<T: Tree>(&self, tree: &T) -> Self::Val {
+    fn visit(&self, tree: &dyn Tree) -> Val {
         Str("visit".to_string())
     }
 
-    fn visit_children<R: RuleNode>(&self, node: &R) -> Self::Val {
+    fn visit_children(&self, node: &dyn RuleNode) -> Val {
         Arr(vec![Str("1".to_string()), Bool(true), Num(Int(128))])
     }
 
-    fn visit_terminal<TN: TerminalNode>(&self, node: &TN) -> Self::Val {
+    fn visit_terminal(&self, node: &dyn TerminalNode) -> Val {
         let mut obj = Object::new();
         obj.insert("name".to_string(), Str("Jack".to_string()));
         obj.insert("age".to_string(), Num(UInt(24)));
         Obj(obj)
     }
 
-    fn visit_err_node<E: ErrorNode>(&self, node: &E) -> Self::Val {
+    fn visit_err_node(&self, node: &dyn ErrorNode) -> Val {
         Num(UInt(128))
     }
 }

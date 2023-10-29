@@ -10,20 +10,20 @@ pub mod token_stream;
 pub mod token_source;
 pub mod char_stream;
 pub mod code_point;
-mod atn_simulator;
-mod prediction_context;
-mod dfa;
-mod dfa_state;
-mod atn_config_set;
-mod atn_config;
-mod atn_state;
+pub mod atn_simulator;
+pub mod prediction_context;
+pub mod dfa;
+pub mod dfa_state;
+pub mod atn_config_set;
+pub mod atn_config;
+pub mod atn_state;
 pub mod token_factory;
 pub mod parser_rule_context;
 pub mod rule_context;
 pub mod value;
-mod lexer_atn_simulator;
-mod antlr_error_listener;
-mod recognition_exception;
+pub mod lexer_atn_simulator;
+pub mod error_listener;
+pub mod errors;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right

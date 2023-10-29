@@ -18,6 +18,12 @@ pub trait LexerATNSimulator: ATNSimulator {
 
 pub struct BaseLexerATNSimulator {}
 
+impl BaseLexerATNSimulator {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
 impl ATNSimulator for BaseLexerATNSimulator {
     fn shared_context_cache(&self) -> &PredictionContextCache {
         todo!()
@@ -38,7 +44,7 @@ impl LexerATNSimulator for BaseLexerATNSimulator {
     }
 
     fn match_(&mut self, input: &mut dyn CharStream) {
-        input.text(1,2);
+        input.text(1, 2);
         todo!()
     }
 

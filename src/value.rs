@@ -1,10 +1,9 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
-use crate::atn_type::ATNType::Parser;
 use crate::value::Number::{Float, Int, UInt};
-use crate::value::Value::{Bool, Num, Str};
+use crate::value::Val::{Bool, Num, Str};
 
-pub type Object = HashMap<String, Value>;
+pub type Object = HashMap<String, Val>;
 
 #[derive(Debug, Clone)]
 pub enum Number {
@@ -17,12 +16,12 @@ pub enum Number {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub enum Value {
+pub enum Val {
     Nil,
     Bool(bool),
     Num(Number),
     Str(String),
-    Arr(Vec<Value>),
+    Arr(Vec<Val>),
     Obj(Object),
 }
 
@@ -39,7 +38,7 @@ impl PartialEq for Number {
 
 impl Eq for Number {}
 
-impl Value {
+impl Val {
     #[inline]
     pub fn to_i64(self) -> Option<i64> {
         match self {

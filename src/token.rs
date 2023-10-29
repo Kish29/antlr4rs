@@ -6,38 +6,13 @@ use crate::int_stream;
 ///  (so we can ignore tabs), token channel, index, and source from which
 ///  we obtained this token.
 pub const TOKEN_INVALID_TYPE: isize = 0;
-
-/// During lookahead operations, this "token" signifies we hit rule end ATN state
-/// and did not follow it despite needing to.
 pub const TOKEN_EPSILON: isize = -2;
-
 pub const TOKEN_MIN_USER_TOKEN_TYPE: isize = 1;
-
 pub const TOKEN_EOF: isize = int_stream::EOF;
-
-/** All tokens go to the parser (unless skip() is called in that rule)
-*  on a particular "channel".  The parser tunes to a particular channel
-*  so that whitespace etc... can go to the parser on a "hidden" channel.
- */
 pub const TOKEN_DEFAULT_CHANNEL: isize = 0;
-
-/** Anything on different channel than DEFAULT_CHANNEL is not parsed
-*  by parser.
- */
 pub const TOKEN_HIDDEN_CHANNEL: isize = 1;
-
-/**
- * This is the minimum constant value which can be assigned to a
- * user-defined token channel.
- *
- * <p>
- * The non-negative numbers less than {@link #MIN_USER_CHANNEL_VALUE} are
- * assigned to the predefined channels {@link #DEFAULT_CHANNEL} and
- * {@link #HIDDEN_CHANNEL}.</p>
- *
- * @see Token#getChannel()
- */
 pub const TOKEN_MIN_USER_CHANNEL_VALUE: isize = 2;
+
 
 pub trait Token {
     /// Get the type of the token */

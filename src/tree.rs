@@ -1,18 +1,19 @@
 use std::borrow::Cow;
 use crate::rule_context::RuleContext;
 use crate::token::Token;
+use crate::value::Val;
 
 pub trait Tree {
     /// The parent of this node. a
     /// If the return value is None, then this node is the root of the tree.
-    fn parent<T: Tree>(&self) -> Option<&T> {
+    fn parent(&self) -> Option<&dyn Tree> {
         None
     }
 
-    fn payload<T: Tree>(&self) -> Option<&T>;
+    fn payload(&self) -> Option<&dyn Tree>;
 
     /// If there are children, get the `i`-th value indexed from 0.
-    fn child<T: Tree>(&self, i: isize) -> Option<&T>;
+    fn child(&self, i: isize) -> Option<&dyn Tree>;
 
     fn child_count(&self) -> isize;
 }
@@ -24,29 +25,27 @@ pub trait SyntaxTree: Tree {
 }
 
 pub trait ParseTree: SyntaxTree {
-    fn accept<Ptv: ParseTreeVisitor>(&self, visitor: &Ptv) -> Ptv::Val;
+    fn accept(&self, visitor: &dyn ParseTreeVisitor) -> Val;
 
     fn text(&self) -> Cow<'_, str>;
 }
 
 pub trait RuleNode: ParseTree {
-    fn rule_context<Ctx: RuleContext>(&self) -> &Ctx;
+    fn rule_context(&self) -> &dyn RuleContext;
 }
 
 pub trait TerminalNode: ParseTree {
-    fn symbol<TK: Token>(&self) -> &TK;
+    fn symbol(&self) -> &dyn Token;
 }
 
 pub trait ErrorNode: TerminalNode {}
 
 pub trait ParseTreeVisitor {
-    type Val;
+    fn visit(&self, tree: &dyn Tree) -> Val;
 
-    fn visit<T: Tree>(&self, tree: &T) -> Self::Val;
+    fn visit_children(&self, node: &dyn RuleNode) -> Val;
 
-    fn visit_children<R: RuleNode>(&self, node: &R) -> Self::Val;
+    fn visit_terminal(&self, node: &dyn TerminalNode) -> Val;
 
-    fn visit_terminal<TN: TerminalNode>(&self, node: &TN) -> Self::Val;
-
-    fn visit_err_node<E: ErrorNode>(&self, node: &E) -> Self::Val;
+    fn visit_err_node(&self, node: &dyn ErrorNode) -> Val;
 }
