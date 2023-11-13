@@ -6,7 +6,7 @@ use crate::char_stream::CharStream;
 use crate::errors::ANTLRError;
 use crate::lexer_atn_simulator::LexerATNSimulator;
 use crate::recognizer::Recognizer;
-use crate::token::{Token, TOKEN_DEFAULT_CHANNEL, TOKEN_INVALID_TYPE};
+use crate::token::{Token, TOKEN_DEFAULT_CHANNEL, TOKEN_EOF, TOKEN_INVALID_TYPE};
 use crate::token_factory::TokenFactory;
 use crate::token_source::TokenSource;
 
@@ -26,17 +26,25 @@ pub struct BaseLexer<R, LAS, TF, CS>
           TF: TokenFactory,
           CS: CharStream
 {
+    // recognizer for specified literals and rules
     pub(crate) recognizer: R,
+    // ATN simulator for lexer
     pub(crate) interpreter: LAS,
+    // token factory for creating token
     pub(crate) factory: TF,
+    // the source of char stream to create token
     pub(crate) input: CS,
 
+    // store the current token start position in line
     token_start_idx: isize,
+    // store the current token start position of line
     token_start_line: isize,
+    // store the current token start position of column
     token_start_column: isize,
 
     // token that temporary store and to emit
     token: Option<TF::TK>,
+    // indicate that stream whether hit eof
     hit_eof: bool,
     channel: isize,
     this_type: isize,
@@ -71,19 +79,72 @@ impl<R, LAS, TF, CS> BaseLexer<R, LAS, TF, CS>
     }
 }
 
+impl<R, LAS, TF, CS> BaseLexer<R, LAS, TF, CS>
+    where CS: CharStream, LAS: LexerATNSimulator, R: Recognizer, TF: TokenFactory {
+    pub fn emit_token(&mut self, tk: TF::TK) {
+        self.token = Some(tk)
+    }
+
+    pub fn emit_eof(&mut self) {
+        let eof = self.factory.create(
+            &self.input,
+            TOKEN_EOF,
+            None,
+            TOKEN_DEFAULT_CHANNEL,
+            self.input.index(),
+            self.input.index() - 1,
+            self.line(),
+            self.char_position_in_line(),
+        );
+        self.emit_token(eof)
+    }
+
+    pub fn emit(&mut self) -> TF::TK {
+        todo!()
+    }
+}
+
 impl<R, LAS, TF, CS> TokenSource for BaseLexer<R, LAS, TF, CS>
     where CS: CharStream, LAS: LexerATNSimulator, R: Recognizer, TF: TokenFactory
 {
+    type TF = TF;
+
+    // parse the next token
+    fn next_token(&mut self) -> <Self::TF as TokenFactory>::TK {
+        'outer: loop {
+            // if stream hit the eof
+            if self.hit_eof {
+                // set and return eof token
+                self.emit_eof();
+                break;
+            }
+            // reset all status
+            self.token = None;
+            self.channel = TOKEN_DEFAULT_CHANNEL;
+            // token start position: column index
+            self.token_start_column = self.interpreter.char_position_in_line();
+            // line index
+            self.token_start_line = self.line();
+            self.text = None;
+
+            let idx = self.input.index();
+            'inner: loop {
+                // self.interpreter.match_()
+            }
+        }
+        self.token.take().unwrap()
+    }
+
     fn line(&self) -> isize {
-        todo!()
+        self.interpreter.line()
     }
 
     fn char_position_in_line(&self) -> isize {
-        todo!()
+        self.interpreter.char_position_in_line()
     }
 
-    fn input_stream(&mut self) -> isize {
-        todo!()
+    fn input_stream(&self) -> &dyn CharStream {
+        &self.input as &dyn CharStream
     }
 }
 

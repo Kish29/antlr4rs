@@ -7,7 +7,7 @@ pub trait TokenFactory {
 
     fn create<S>(
         &self,
-        stream: &mut S,
+        stream: &S,
         token_type: isize,
         text: Option<String>,
         channel: isize,
@@ -32,7 +32,7 @@ impl TokenFactory for CommonTokenFactory {
     #[inline]
     fn create<S>(
         &self,
-        stream: &mut S,
+        stream: &S,
         token_type: isize,
         text: Option<String>,
         channel: isize,

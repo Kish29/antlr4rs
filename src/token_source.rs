@@ -1,3 +1,6 @@
+use crate::char_stream::CharStream;
+use crate::token_factory::TokenFactory;
+
 /// A source of tokens must provide a sequence of tokens via `next_token()`
 //  and also must reveal it's source of characters; {@link CommonToken}'s text is
 //  computed from a {@link CharStream}; it only store indices into the char
@@ -12,11 +15,13 @@
 //  token. Keep lexing until you get a valid one. Just report errors and keep
 //  going, looking for a valid token.</p>
 pub trait TokenSource {
-    // fn next_token(&mut self) -> Option<Rc<dyn Token>>;
+    type TF: TokenFactory;
+
+    fn next_token(&mut self) -> <Self::TF as TokenFactory>::TK;
 
     fn line(&self) -> isize;
 
     fn char_position_in_line(&self) -> isize;
 
-    fn input_stream(&mut self) -> isize;
+    fn input_stream(&self) -> &dyn CharStream;
 }
