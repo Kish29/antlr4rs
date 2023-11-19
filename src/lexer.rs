@@ -1,12 +1,12 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 use crate::error_listener::ErrorListener;
-use crate::atn::ATN;
 use crate::char_stream::CharStream;
 use crate::errors::ANTLRError;
 use crate::lexer_atn_simulator::LexerATNSimulator;
 use crate::recognizer::Recognizer;
-use crate::token::{Token, TOKEN_DEFAULT_CHANNEL, TOKEN_EOF, TOKEN_INVALID_TYPE};
+use crate::rule_context::RuleContext;
+use crate::token::{TOKEN_DEFAULT_CHANNEL, TOKEN_EOF, TOKEN_INVALID_TYPE};
 use crate::token_factory::TokenFactory;
 use crate::token_source::TokenSource;
 
@@ -15,8 +15,6 @@ pub const LEXER_MORE: isize = -2;
 pub const LEXER_SKIP: isize = -3;
 
 pub trait Lexer: TokenSource + Recognizer {
-    type TK: Token + Clone + ?Sized;
-
     fn emit(&mut self) -> Self::TK;
 }
 
@@ -89,7 +87,7 @@ impl<R, LAS, TF, CS> BaseLexer<R, LAS, TF, CS>
         let eof = self.factory.create(
             &self.input,
             TOKEN_EOF,
-            None,
+            self.text.take(),
             TOKEN_DEFAULT_CHANNEL,
             self.input.index(),
             self.input.index() - 1,
@@ -107,10 +105,11 @@ impl<R, LAS, TF, CS> BaseLexer<R, LAS, TF, CS>
 impl<R, LAS, TF, CS> TokenSource for BaseLexer<R, LAS, TF, CS>
     where CS: CharStream, LAS: LexerATNSimulator, R: Recognizer, TF: TokenFactory
 {
-    type TF = TF;
+    type TK = TF::TK;
+    // type CS = CS;
 
     // parse the next token
-    fn next_token(&mut self) -> <Self::TF as TokenFactory>::TK {
+    fn next_token(&mut self) -> Self::TK {
         'outer: loop {
             // if stream hit the eof
             if self.hit_eof {
@@ -143,9 +142,9 @@ impl<R, LAS, TF, CS> TokenSource for BaseLexer<R, LAS, TF, CS>
         self.interpreter.char_position_in_line()
     }
 
-    fn input_stream(&self) -> &dyn CharStream {
-        &self.input as &dyn CharStream
-    }
+    // fn input_stream(&self) -> &Self::CS {
+    //     &self.input
+    // }
 }
 
 impl<R, LAS, TF, CS> Recognizer for BaseLexer<R, LAS, TF, CS>
@@ -155,13 +154,25 @@ impl<R, LAS, TF, CS> Recognizer for BaseLexer<R, LAS, TF, CS>
         self.recognizer.literal_names()
     }
 
+    fn symbolic_names(&self) -> &[&str] {
+        self.recognizer.symbolic_names()
+    }
+
     fn rule_names(&self) -> &[&str] {
         self.recognizer.rule_names()
     }
 
-    fn atn(&self) -> &ATN {
-        self.recognizer.atn()
+    fn sempred(&self, _local_ctx: Rc<dyn RuleContext>, _rule_idx: isize, _action_idx: isize) -> bool {
+        todo!()
     }
+
+    fn precpred(&self, _local_ctx: Rc<dyn RuleContext>, _precedence: isize) -> bool {
+        todo!()
+    }
+
+    /*fn atn(&self) -> &ATN {
+        self.recognizer.atn()
+    }*/
 
     fn state(&self) -> isize {
         self.recognizer.state()
@@ -169,6 +180,10 @@ impl<R, LAS, TF, CS> Recognizer for BaseLexer<R, LAS, TF, CS>
 
     fn set_state(&mut self, state: isize) {
         self.recognizer.set_state(state)
+    }
+
+    fn action(&self, _local_ctx: Rc<dyn RuleContext>, _rule_idx: isize, _action_idx: isize) {
+        todo!()
     }
 
     fn add_error_listener(&mut self, l: Rc<RefCell<dyn ErrorListener>>) {
@@ -202,8 +217,6 @@ impl<R, LAS, TF, CS> Lexer for BaseLexer<R, LAS, TF, CS>
           TF: TokenFactory,
           CS: CharStream
 {
-    type TK = TF::TK;
-
     fn emit(&mut self) -> Self::TK {
         todo!()
     }

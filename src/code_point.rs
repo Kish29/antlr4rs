@@ -2,8 +2,6 @@ use std::borrow::Cow;
 use std::char::REPLACEMENT_CHARACTER;
 use std::fmt::Debug;
 
-const TEXT_RANGE_EOF: &'static str = "<EOF>";
-
 pub trait CodePoints {
     /// code point at the `pos` of [CodePoints] and try to convert to [u32].
     /// sting type must be indexed by the interpreter as the characters
@@ -13,7 +11,6 @@ pub trait CodePoints {
 
     /// returns the text for the interval `start`..`end` of characters within this CodePoints
     /// include the end index, the symbol of each must convert to character
-    /// must returns "<EOF>" if index out of range
     fn text_range(&self, start: usize, end: usize) -> Cow<'_, str>;
 }
 
@@ -34,7 +31,7 @@ impl CodePoints for String {
     #[inline]
     fn text_range(&self, start: usize, mut end: usize) -> Cow<'_, str> {
         if start > end || start >= self.len() {
-            return Cow::Borrowed(TEXT_RANGE_EOF);
+            return Cow::Borrowed("");
         }
         if end >= self.len() {
             end = self.len() - 1;
@@ -65,7 +62,7 @@ impl<T: ?Sized + Copy + Debug + Into<u32>> CodePoints for Vec<T> {
     #[inline]
     fn text_range(&self, start: usize, mut end: usize) -> Cow<'_, str> {
         if start > end || start >= self.len() {
-            return Cow::Borrowed(TEXT_RANGE_EOF);
+            return Cow::Borrowed("");
         }
         if end >= self.len() {
             end = self.len() - 1;

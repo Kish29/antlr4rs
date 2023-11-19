@@ -1,3 +1,11 @@
+// It's 2023/11/19 when I add this feature to support trait upcasting in Antlr, that could:
+// cast trait B to trait A which B extend from A, so I can cast parse rule context into tree or rule context.
+// Fortunately, this feature has been completed by the Rust compiler team at this point in time(for 4 years hard work, really appreciate for Rust teams),
+// and I look forward to the day when this project finished and I can remove this annotation without care.
+// See issue: https://github.com/rust-lang/rust/issues/65991
+#![feature(trait_upcasting)]
+#![allow(incomplete_features)]
+
 pub mod atn;
 pub mod atn_type;
 pub mod recognizer;
@@ -24,7 +32,8 @@ pub mod value;
 pub mod lexer_atn_simulator;
 pub mod error_listener;
 pub mod errors;
-mod lexer_action;
+pub mod lexer_action;
+pub mod parser;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right

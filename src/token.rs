@@ -1,4 +1,5 @@
 use std::borrow::Cow;
+use std::fmt::{Debug, Display, Formatter};
 use std::sync::atomic::{AtomicIsize, Ordering};
 use crate::int_stream;
 
@@ -13,8 +14,9 @@ pub const TOKEN_DEFAULT_CHANNEL: isize = 0;
 pub const TOKEN_HIDDEN_CHANNEL: isize = 1;
 pub const TOKEN_MIN_USER_CHANNEL_VALUE: isize = 2;
 
+const TEXT_EOF: &'static str = "<EOF>";
 
-pub trait Token {
+pub trait Token: Debug + Display {
     /// Get the type of the token */
     fn token_type(&self) -> isize;
 
@@ -88,6 +90,18 @@ impl BaseToken {
     }
 }
 
+impl Debug for BaseToken {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        todo!()
+    }
+}
+
+impl Display for BaseToken {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        todo!()
+    }
+}
+
 impl Token for BaseToken {
     #[inline]
     fn token_type(&self) -> isize {
@@ -96,17 +110,21 @@ impl Token for BaseToken {
 
     #[inline]
     fn text(&self) -> Cow<'_, str> {
-        Cow::Borrowed(self.text.as_str())
+        return if self.token_type == TOKEN_EOF {
+            Cow::Borrowed(TEXT_EOF)
+        } else {
+            Cow::Borrowed(self.text.as_str())
+        };
     }
 
     #[inline]
     fn token_index(&self) -> isize {
-        self.token_index.load(Ordering::SeqCst)
+        self.token_index.load(Ordering::Relaxed)
     }
 
     #[inline]
     fn set_token_index(&self, idx: isize) {
-        self.token_index.store(idx, Ordering::SeqCst)
+        self.token_index.store(idx, Ordering::Relaxed)
     }
 }
 

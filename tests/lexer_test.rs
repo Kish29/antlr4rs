@@ -32,7 +32,7 @@ fn test_new_lexer() {
     let lexer = BaseLexer::new(
         recognizer,
         BaseLexerATNSimulator::new(),
-        CommonTokenFactory::default(),
+        CommonTokenFactory::new(),
         StringStream::new("this is char stream".to_string()),
     );
 }

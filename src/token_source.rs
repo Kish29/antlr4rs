@@ -1,4 +1,4 @@
-use crate::char_stream::CharStream;
+use crate::token::Token;
 use crate::token_factory::TokenFactory;
 
 /// A source of tokens must provide a sequence of tokens via `next_token()`
@@ -15,13 +15,14 @@ use crate::token_factory::TokenFactory;
 //  token. Keep lexing until you get a valid one. Just report errors and keep
 //  going, looking for a valid token.</p>
 pub trait TokenSource {
-    type TF: TokenFactory;
+    type TK: Token + Clone + ?Sized;
+    // type CS: CharStream;
 
-    fn next_token(&mut self) -> <Self::TF as TokenFactory>::TK;
+    fn next_token(&mut self) -> Self::TK;
 
     fn line(&self) -> isize;
 
     fn char_position_in_line(&self) -> isize;
 
-    fn input_stream(&self) -> &dyn CharStream;
+    // fn input_stream(&self) -> &Self::CS;
 }

@@ -3,6 +3,8 @@ use crate::atn_state::ATNState;
 use crate::atn_type::ATNType;
 use crate::lexer_action::LexerAction;
 
+pub(crate) const ATN_INVALID_ALT_NUMBER: isize = 0;
+
 pub struct ATN {
     pub(crate) grammar_type: ATNType,
     pub(crate) decision_to_state: Vec<ATNState>,
