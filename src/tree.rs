@@ -46,7 +46,7 @@ pub trait ParseTree: SyntaxTree {
     fn text(&self) -> Cow<'_, str>;
 }
 
-/// An interface that represent the rule context
+/// An interface that represent the rule context.
 pub trait RuleNode: ParseTree {
     fn rule_context(&self) -> &dyn RuleContext;
 }

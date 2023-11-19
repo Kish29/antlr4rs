@@ -1,6 +1,9 @@
-use std::any::{Any, TypeId};
+#![feature(trait_upcasting)]
+#![allow(incomplete_features)]
+
+use std::any::Any;
 use std::borrow::Cow;
-use std::rc::Rc;
+use antlr4rs::any_ext;
 use antlr4rs::input_stream::StringStream;
 use antlr4rs::parser_rule_context::BaseParserRuleContext;
 use antlr4rs::rule_context::RuleContext;
@@ -52,11 +55,21 @@ impl Tree for MyParseTree {
 
 impl ParseTree for MyParseTree {
     fn accept(&self, visitor: &dyn ParseTreeVisitor) -> Val {
-        if visitor.type_id() == TypeId::of::<MyParseTreeVisitor>() {
-            println!("MyParseTree recognized MyParseTreeVisitor");
-            return visitor.visit_children(self);
+        // not graceful
+        /*if visitor.type_id() == TypeId::of::<MyParseTreeVisitor>() {
+            return (visitor as &dyn Any).downcast_ref::<MyParseTreeVisitor>().unwrap().visit_custom(self);
+        }*/
+        // use this
+        match any_ext::try_downcast_ref::<MyParseTreeVisitor>(visitor as &dyn Any) {
+            Ok(p) => {
+                println!("MyParseTree recognized MyParseTreeVisitor");
+                p.visit_custom(self)
+            }
+            Err(e) => {
+                println!("cast to MyParseTreeVisitor failed. error: {:?}", e);
+                self.base.accept(visitor)
+            }
         }
-        self.base.accept(visitor)
     }
 
     fn text(&self) -> Cow<'_, str> {
@@ -66,6 +79,12 @@ impl ParseTree for MyParseTree {
 
 struct MyParseTreeVisitor {
     base: BaseParseTreeVisitor,
+}
+
+impl MyParseTreeVisitor {
+    pub fn visit_custom(&self, _tree: &dyn ParseTree) -> Val {
+        Str("visit_custom".to_string())
+    }
 }
 
 impl ParseTreeVisitor for MyParseTreeVisitor {
