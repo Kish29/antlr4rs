@@ -1,6 +1,6 @@
-use std::any::Any;
 use std::borrow::Cow;
-use std::rc::Rc;
+use std::fmt::Debug;
+use crate::any_ext::AnyExt;
 use crate::rule_context::RuleContext;
 use crate::token::Token;
 use crate::value::Val;
@@ -13,7 +13,7 @@ use crate::value::Val::Nil;
 
 /// The basic notion of a tree has a parent, a payload, and a list of children.
 /// It is the most abstract interface for all the trees used by ANTLR.
-pub trait Tree {
+pub trait Tree: AnyExt {
     // fn tid(&self) -> usize { 0 }
 
     /// The parent of this node. a
@@ -35,11 +35,11 @@ pub trait SyntaxTree: Tree {
     fn source_end(&self) -> isize;
 }
 
-/// An interface to access the tree of #[RuleContext] objects created
+/// An interface to access the tree of [RuleContext] objects created
 /// during a parse that makes the data structure look like a simple parse tree.
 /// This node represents both internal nodes, rule invocations,
 /// and leaf nodes, token matches.
-/// The payload is either a #[Token] or a #[RuleContext] object.
+/// The payload is either a [Token] or a [RuleContext] object.
 pub trait ParseTree: SyntaxTree {
     fn accept(&self, visitor: &dyn ParseTreeVisitor) -> Val;
 
@@ -57,7 +57,7 @@ pub trait TerminalNode: ParseTree {
 
 pub trait ErrorNode: TerminalNode {}
 
-pub trait ParseTreeVisitor: Any {
+pub trait ParseTreeVisitor: AnyExt {
     fn visit(&self, tree: &dyn ParseTree) -> Val;
 
     fn visit_children(&self, node: &dyn RuleNode) -> Val;
@@ -67,6 +67,7 @@ pub trait ParseTreeVisitor: Any {
     fn visit_err_node(&self, node: &dyn ErrorNode) -> Val;
 }
 
+#[derive(Debug)]
 pub struct BaseParseTreeVisitor;
 
 impl Default for BaseParseTreeVisitor {
@@ -74,6 +75,7 @@ impl Default for BaseParseTreeVisitor {
 }
 
 impl ParseTreeVisitor for BaseParseTreeVisitor {
+    #[inline(always)]
     fn visit(&self, tree: &dyn ParseTree) -> Val { tree.accept(self) }
 
     fn visit_children(&self, _node: &dyn RuleNode) -> Val { Nil }

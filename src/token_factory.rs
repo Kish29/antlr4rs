@@ -50,7 +50,7 @@ impl TokenFactory for CommonTokenFactory {
             line,
             column,
             if let Some(t) = text { t } else {
-                stream.text(start as usize, stop as usize).to_string()
+                stream.text(start as usize, stop as usize).into_owned()
             },
             false,
         )

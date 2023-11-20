@@ -36,7 +36,7 @@ impl RuleNode for BaseRuleContext {
 }
 
 impl ParseTree for BaseRuleContext {
-    #[inline]
+    #[inline(always)]
     fn accept(&self, visitor: &dyn ParseTreeVisitor) -> Val {
         visitor.visit_children(self)
     }

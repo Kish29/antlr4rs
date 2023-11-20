@@ -1,7 +1,7 @@
 // It's 2023/11/19 when I add this feature to support trait upcasting in Antlr, that could:
 // cast trait B to trait A which B extend from A, so I can cast parse rule context into tree or rule context.
-// Fortunately, this feature has been completed by the Rust compiler team at this point in time(for 4 years hard work, really appreciate for Rust teams),
-// and I look forward to the day when this project finished and I can remove this annotation without care.
+// Fortunately, this feature will be stabilized soon at this point of time(Thanks for Rust teams),
+// and I look forward to the day when this project finished and I can remove this annotation without concern.
 // See issue: https://github.com/rust-lang/rust/issues/65991
 #![feature(trait_upcasting)]
 #![allow(incomplete_features)]

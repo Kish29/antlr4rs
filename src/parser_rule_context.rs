@@ -1,6 +1,5 @@
 use std::borrow::Cow;
 use std::rc::Rc;
-use std::thread::sleep;
 use crate::error_listener::ErrorListener;
 use crate::errors::ANTLRError;
 use crate::rule_context::{BaseRuleContext, RuleContext};
@@ -54,7 +53,7 @@ impl RuleNode for BaseParserRuleContext {
 }
 
 impl ParseTree for BaseParserRuleContext {
-    #[inline]
+    #[inline(always)]
     fn accept(&self, visitor: &dyn ParseTreeVisitor) -> Val {
         visitor.visit_children(self)
     }
