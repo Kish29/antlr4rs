@@ -24,7 +24,7 @@ pub struct BaseLexer<R, LAS, TF, CS>
           TF: TokenFactory,
           CS: CharStream
 {
-    // recognizer for specified literals and rules
+    // recognizer for specified lexer literals and rules
     pub(crate) recognizer: R,
     // ATN simulator for lexer
     pub(crate) interpreter: LAS,

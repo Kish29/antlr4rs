@@ -3,7 +3,7 @@ use antlr4rs::char_stream::{CharStream};
 use antlr4rs::input_stream::{CodePoint32BitStream, StringStream};
 
 fn str_input_stream() {
-    let mut input = StringStream::new(r#"A你4好§，\❤"#.to_string());
+    let mut input = StringStream::from(r#"A你4好§，\❤"#);
     let input = &mut input as &mut dyn CharStream;
     assert_eq!(input.size(), 8);
     input.consume();

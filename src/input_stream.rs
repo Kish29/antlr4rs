@@ -31,6 +31,18 @@ impl<T: CodePoints> InputStream<T> {
     }
 }
 
+impl<T: ToOwned + ?Sized> From<&T> for InputStream<T::Owned> where T::Owned: CodePoints {
+    #[inline]
+    fn from(input: &T) -> Self {
+        let owned = input.to_owned();
+        Self {
+            index: 0,
+            size: owned.size() as isize,
+            data: owned,
+        }
+    }
+}
+
 impl<T: CodePoints> IntStream for InputStream<T> {
     #[inline]
     /// Consume(read) one char(rune)

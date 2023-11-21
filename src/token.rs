@@ -52,6 +52,7 @@ pub trait Token: Debug + Display {
     fn set_token_index(&self, idx: isize);
 }
 
+#[derive(Debug)]
 pub struct BaseToken {
     token_type: isize,
     channel: isize,
@@ -87,12 +88,6 @@ impl BaseToken {
             text,
             read_only,
         }
-    }
-}
-
-impl Debug for BaseToken {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        todo!()
     }
 }
 

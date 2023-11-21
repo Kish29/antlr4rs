@@ -6,7 +6,7 @@ pub trait AnyExt: Any {}
 
 impl Debug for dyn AnyExt {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("AnyExt").finish()
+        f.debug_struct("AnyExt(trait)").finish()
     }
 }
 

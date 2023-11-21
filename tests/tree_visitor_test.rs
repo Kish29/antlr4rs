@@ -145,7 +145,7 @@ fn test_tree_visitor() {
     println!("{:?}", mptv.visit_err_node(&mpt));
     println!("{:?}", mpt.text());
 
-    let mut input = StringStream::new("input stream in test".to_string());
+    let mut input = StringStream::from("input stream in test");
 
     let tf: CommonTokenFactory = CommonTokenFactory::new();
     let tk = tf.create(&mut input, 1, None, 1, 0, 4, 0, 0);

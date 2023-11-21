@@ -24,7 +24,7 @@ pub trait ParserRuleContext: RuleContext {
 }
 
 pub struct BaseParserRuleContext {
-    pub(crate) base: BaseRuleContext,
+    base: BaseRuleContext,
 
     pub(crate) start: Option<Rc<dyn Token>>,
     pub(crate) stop: Option<Rc<dyn Token>>,

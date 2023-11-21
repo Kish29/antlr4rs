@@ -1,4 +1,5 @@
-use std::rc::Rc;
+use antlr4rs::common_token_stream::CommonTokenStream;
+// use this file to assist me comprehend lexer workaround.
 use antlr4rs::error_listener::ErrorListener;
 use antlr4rs::errors::ANTLRError;
 use antlr4rs::input_stream::StringStream;
@@ -22,7 +23,7 @@ impl ErrorListener for MyANTLRErrorListener {
 }
 
 #[test]
-fn test_new_lexer() {
+fn test_assist_lexer() {
     let recognizer = BaseRecognizer::new(
         RULE_NAMES,
         LITERAL_NAMES,
@@ -33,6 +34,7 @@ fn test_new_lexer() {
         recognizer,
         BaseLexerATNSimulator::new(),
         CommonTokenFactory::new(),
-        StringStream::new("this is char stream".to_string()),
+        StringStream::from("this is char stream"),
     );
+    let cts = CommonTokenStream::new(lexer, 0);
 }
