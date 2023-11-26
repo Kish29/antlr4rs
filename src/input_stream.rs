@@ -22,6 +22,7 @@ pub type CodePoint32BitStream = InputStream<Vec<u32>>;
 
 impl<T: CodePoints> InputStream<T> {
     /// returns a new [InputStream] and owned/clone the data from the `input`
+    #[inline(always)]
     pub fn new(input: T) -> Self {
         Self {
             index: 0,

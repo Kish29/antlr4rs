@@ -33,6 +33,7 @@ pub struct BaseParserRuleContext {
 }
 
 impl BaseParserRuleContext {
+    #[inline(always)]
     pub fn new(parent: Option<Rc<dyn ParserRuleContext>>, invoking_state: isize) -> Self {
         Self {
             base: BaseRuleContext::new(

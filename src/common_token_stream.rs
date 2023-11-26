@@ -15,6 +15,7 @@ pub struct CommonTokenStream<TS: TokenSource> {
 }
 
 impl<TS: TokenSource> CommonTokenStream<TS> {
+    #[inline(always)]
     pub fn new(lexer: TS, channel: isize) -> Self {
         Self {
             channel,

@@ -57,6 +57,7 @@ impl<R, LAS, TF, CS> BaseLexer<R, LAS, TF, CS>
           TF: TokenFactory,
           CS: CharStream
 {
+    #[inline(always)]
     pub fn new(r: R, las: LAS, tf: TF, cs: CS) -> Self {
         Self {
             recognizer: r,

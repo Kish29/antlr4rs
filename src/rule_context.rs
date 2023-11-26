@@ -25,6 +25,7 @@ pub struct BaseRuleContext {
 }
 
 impl BaseRuleContext {
+    #[inline(always)]
     pub fn new(parent: Option<Rc<dyn RuleContext>>, invoking_state: isize) -> Self {
         Self { parent_ctx: parent, invoking_state }
     }

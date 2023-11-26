@@ -1,3 +1,4 @@
+use crate::parser_atn_simulator::ParserATNSimulator;
 use crate::recognizer::Recognizer;
 
 pub trait Parser: Recognizer {
@@ -5,11 +6,10 @@ pub trait Parser: Recognizer {
 }
 
 pub struct BaseParser<R, PAS, TS>
-where R: Recognizer,
-    PAS:
+    where R: Recognizer,
+          PAS: ParserATNSimulator,
 {
-
     pub(crate) recognizer: R,
-    pub(crate)
-
+    pub(crate) interpreter: PAS,
+    pub(crate) token_stream: TS,
 }

@@ -66,6 +66,7 @@ pub struct BaseToken {
 }
 
 impl BaseToken {
+    #[inline(always)]
     pub fn new(
         token_type: isize,
         channel: isize,

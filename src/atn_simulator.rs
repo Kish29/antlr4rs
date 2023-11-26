@@ -19,6 +19,7 @@ pub struct BaseATNSimulator {
 }
 
 impl BaseATNSimulator {
+    #[inline(always)]
     pub fn new(atn: ATN, shared_ctx_cache: PredictionContextCache) -> Self {
         Self {
             atn,

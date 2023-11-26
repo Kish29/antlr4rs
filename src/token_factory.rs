@@ -20,10 +20,14 @@ pub trait TokenFactory {
 
 pub struct CommonTokenFactory;
 
+impl Default for CommonTokenFactory {
+    #[inline(always)]
+    fn default() -> Self { Self {} }
+}
+
 impl CommonTokenFactory {
-    pub fn new() -> Self {
-        Self {}
-    }
+    #[inline(always)]
+    pub fn new() -> Self { Self {} }
 }
 
 impl TokenFactory for CommonTokenFactory {

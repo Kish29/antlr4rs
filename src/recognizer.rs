@@ -48,6 +48,7 @@ pub struct BaseRecognizer {
 }
 
 impl BaseRecognizer {
+    #[inline(always)]
     pub fn new(
         rule_names: &'static [&'static str],
         literal_names: &'static [&'static str],
