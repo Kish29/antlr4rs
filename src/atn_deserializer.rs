@@ -1,11 +1,10 @@
-use std::intrinsics::pref_align_of;
 /// [ATNDeserializer] deserialize i32 array into ATN struct.
 /// i32 array place data in this order
-/// | serialized-version, atn-states-num, {state-type, rule-index}* |
+/// | serialized-version, atn-states-num, {atn-state-type, rule-index, {contrast-nth}\*}\*, non-greedy-states-num, {non-greedy-nth}\*, precedence-states-num, {precedence-nth}\* |
 use std::slice::Iter;
 use crate::atn::ATN;
 use crate::atn_deserialize_option::ATNDeserializeOption;
-use crate::atn_state::{ATN_STATE_BASIC, ATN_STATE_BLOCK_START, ATN_STATE_LOOP_END, ATNState, StateType};
+use crate::atn_state::{ATNState, StateType};
 use crate::atn_type::ATNType;
 
 const SERIALIZED_VERSION: isize = 1;
@@ -49,23 +48,69 @@ impl ATNDeserializer {
         )
     }
 
-    #[inline]
+    /// parse all states into ATN, use enum type to implement in Rust to decrease dynamic or vtable cost.
+    /// just store the nth for contrast ATN state type, how clever I am! ^_^
+    #[inline(always)]
     fn read_states(&self, data: &mut Iter<i32>, atn: &mut ATN) {
         let states_num = *data.next().unwrap() as usize;
         atn.states = Vec::with_capacity(states_num);
-        for i in 0..states_num {
+
+        for nth in 0..states_num {
+            // get atn state type.
             let state_type = *data.next().unwrap() as StateType;
-            if state_type < ATN_STATE_BASIC || state_type > ATN_STATE_LOOP_END {
-                panic!("deserialize an invalid ATN state type, it should not happen, it's a bug.")
-            }
+            // check type, panic if type is invalid.
+            ATNState::check_type(state_type);
+            // get rule index
             let rule_idx = *data.next().unwrap() as usize;
-            let atn_state = ATNState::new(state_type, rule_idx, i);
-            if (state_type as StateType) == ATN_STATE_LOOP_END {
-                todo!()
-            } else if (state_type as StateType) == ATN_STATE_BLOCK_START {
-                todo!()
+            // create a new atn state
+            let mut atn_state = ATNState::new(state_type, rule_idx, nth);
+            // push anchors if atn state type is loop end or block start
+            match &mut atn_state {
+                ATNState::BlockStart(bs) => {
+                    bs.block_end_state_nth = *data.next().unwrap() as usize;
+                    bs.contrast_set = true;
+                }
+                ATNState::LoopEnd(le) => {
+                    le.loopback_state_nth = *data.next().unwrap() as usize;
+                    le.contrast_set = true;
+                }
+                _ => (),
             }
             atn.states.push(atn_state);
+        }
+
+        // check whether all block start and loopback has been set to it's peer correctly.
+        self.check_contrast_states(&atn.states);
+
+        let non_greedy_states_num = *data.next().unwrap() as usize;
+        for _ in 0..non_greedy_states_num {
+            let nth = *data.next().unwrap() as usize;
+            atn.states[nth].to_decision_state_mut().unwrap().non_greedy = true;
+        }
+
+        let precedence_states_num = *data.next().unwrap() as usize;
+        for _ in 0..precedence_states_num {
+            let nth = *data.next().unwrap() as usize;
+            atn.states[nth].to_rule_start_state_mut().unwrap().precedence = true;
+        }
+    }
+
+    #[inline(always)]
+    fn check_contrast_states(&self, states: &Vec<ATNState>) {
+        for atn_state in states {
+            match atn_state {
+                ATNState::BlockStart(bs) => {
+                    if !bs.contrast_set {
+                        panic!("BlockStart's BlockEndState nth not set, it should not happen, it's a bug.")
+                    }
+                }
+                ATNState::LoopEnd(le) => {
+                    if !le.contrast_set {
+                        panic!("LoopEnd's loopback nth not set, it should not happen, it's a bug.")
+                    }
+                }
+                _ => ()
+            }
         }
     }
 }

@@ -1,4 +1,6 @@
+use std::cell::RefCell;
 use std::collections::HashMap;
+use std::rc::Rc;
 use crate::atn_state::{ATNState, BaseATNState, StateType};
 use crate::atn_type::ATNType;
 use crate::lexer_action::LexerAction;

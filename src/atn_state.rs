@@ -1,21 +1,21 @@
 pub(crate) type StateType = usize;
 
-pub(crate) const ATN_STATE_BASIC: StateType = 1;
+const ATN_STATE_BASIC: StateType = 1;
 // expr : expr
-pub(crate) const ATN_STATE_RULE_START: StateType = 2;
+const ATN_STATE_RULE_START: StateType = 2;
 // (xxx)
-pub(crate) const ATN_STATE_BLOCK_START: StateType = 3;
+const ATN_STATE_BLOCK_START: StateType = 3;
 // (xxx)+
-pub(crate) const ATN_STATE_PLUS_BLOCK_START: StateType = 4;
+const ATN_STATE_PLUS_BLOCK_START: StateType = 4;
 // (xxx)*
-pub(crate) const ATN_STATE_STAR_BLOCK_START: StateType = 5;
-pub(crate) const ATN_STATE_TOKEN_START: StateType = 6;
-pub(crate) const ATN_STATE_RULE_STOP: StateType = 7;
-pub(crate) const ATN_STATE_BLOCK_END: StateType = 8;
-pub(crate) const ATN_STATE_STAR_LOOPBACK: StateType = 9;
-pub(crate) const ATN_STATE_STAR_LOOP_ENTRY: StateType = 10;
-pub(crate) const ATN_STATE_PLUS_LOOPBACK: StateType = 11;
-pub(crate) const ATN_STATE_LOOP_END: StateType = 12;
+const ATN_STATE_STAR_BLOCK_START: StateType = 5;
+const ATN_STATE_TOKEN_START: StateType = 6;
+const ATN_STATE_RULE_STOP: StateType = 7;
+const ATN_STATE_BLOCK_END: StateType = 8;
+const ATN_STATE_STAR_LOOPBACK: StateType = 9;
+const ATN_STATE_STAR_LOOP_ENTRY: StateType = 10;
+const ATN_STATE_PLUS_LOOPBACK: StateType = 11;
+const ATN_STATE_LOOP_END: StateType = 12;
 
 #[derive(Debug)]
 pub struct BaseATNState {
@@ -48,6 +48,13 @@ pub enum ATNState {
 }
 
 impl ATNState {
+    #[inline(always)]
+    pub fn check_type(state_type: StateType) {
+        if state_type < ATN_STATE_BASIC || state_type > ATN_STATE_LOOP_END {
+            panic!("deserialize an invalid ATN state type, it should not happen, it's a bug.")
+        }
+    }
+
     #[inline]
     pub fn new(state_type: StateType, rule_idx: usize, state_nth: usize) -> ATNState {
         match state_type {
@@ -74,7 +81,8 @@ impl ATNState {
 
     #[inline(always)]
     fn new_rule_start(rule_idx: usize, state_nth: usize) -> ATNState {
-        todo!()
+        let base = BaseATNState::new(ATN_STATE_LOOP_END, rule_idx, state_nth);
+        ATNState::RuleStart(RuleStartState { base, rule_stop_state_nth: 0, contrast_set: false, precedence: false })
     }
 
     #[inline(always)]
@@ -115,25 +123,36 @@ impl ATNState {
     }
     #[inline(always)]
     fn new_loop_end(rule_idx: usize, state_nth: usize) -> ATNState {
-        todo!()
+        let base = BaseATNState::new(ATN_STATE_LOOP_END, rule_idx, state_nth);
+        ATNState::LoopEnd(LoopEndState { base, loopback_state_nth: 0, contrast_set: false })
     }
 
     #[inline(always)]
     pub fn state_type(&self) -> StateType {
         match self {
             ATNState::Basic(b) => b.state_type,
-            ATNState::RuleStart(r) => {}
-            ATNState::BlockStart(_) => {}
-            ATNState::PlusBlockStart(_) => {}
-            ATNState::StarBlockStart(_) => {}
-            ATNState::TokenStart(_) => {}
-            ATNState::RuleStop(_) => {}
-            ATNState::BlockEnd(_) => {}
-            ATNState::StarLoopback(_) => {}
-            ATNState::StarLoopEntry(_) => {}
-            ATNState::PlusLoopback(_) => {}
-            ATNState::LoopEnd(_) => {}
+            ATNState::RuleStart(r) => todo!(),
+            ATNState::BlockStart(_) => todo!(),
+            ATNState::PlusBlockStart(_) => todo!(),
+            ATNState::StarBlockStart(_) => todo!(),
+            ATNState::TokenStart(_) => todo!(),
+            ATNState::RuleStop(_) => todo!(),
+            ATNState::BlockEnd(_) => todo!(),
+            ATNState::StarLoopback(_) => todo!(),
+            ATNState::StarLoopEntry(_) => todo!(),
+            ATNState::PlusLoopback(_) => todo!(),
+            ATNState::LoopEnd(_) => todo!(),
         }
+    }
+
+    #[inline(always)]
+    pub fn to_decision_state_mut(&mut self) -> Option<&mut DecisionState> {
+        todo!()
+    }
+
+    #[inline(always)]
+    pub fn to_rule_start_state_mut(&mut self) -> Option<&mut RuleStartState> {
+        todo!()
     }
 }
 
@@ -146,22 +165,29 @@ pub struct DecisionState {
 
 impl DecisionState {
     #[inline(always)]
-    pub fn new(state_type: StateType, rule_idx: usize, decision: isize) -> Self {
-        Self { base: BaseATNState::new(state_type, rule_idx), decision, non_greedy: false }
+    pub fn new(state_type: StateType, rule_idx: usize, state_nth: usize) -> Self {
+        let base = BaseATNState::new(state_type, rule_idx, state_nth);
+        Self { base, decision: -1, non_greedy: false }
     }
 }
 
 #[derive(Debug)]
 pub struct BlockStartState {
-    pub base: BaseATNState,
-
+    pub(crate) base: BaseATNState,
+    pub(crate) block_end_state_nth: usize,
+    pub(crate) contrast_set: bool,
 }
 
 #[derive(Debug)]
 pub struct BlockEndState {}
 
 #[derive(Debug)]
-pub struct RuleStartState {}
+pub struct RuleStartState {
+    pub(crate) base: BaseATNState,
+    pub(crate) rule_stop_state_nth: usize,
+    pub(crate) contrast_set: bool,
+    pub(crate) precedence: bool,
+}
 
 #[derive(Debug)]
 pub struct RuleStopState {}
@@ -185,4 +211,8 @@ pub struct StarLoopEntryState {}
 pub struct PlusLoopbackState {}
 
 #[derive(Debug)]
-pub struct LoopEndState {}
+pub struct LoopEndState {
+    pub(crate) base: BaseATNState,
+    pub(crate) loopback_state_nth: usize,
+    pub(crate) contrast_set: bool,
+}
