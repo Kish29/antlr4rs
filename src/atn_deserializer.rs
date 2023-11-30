@@ -25,6 +25,10 @@ impl ATNDeserializer {
         let mut data = data.iter();
         self.check_version(&mut data);
         let mut atn = self.read_atn(&mut data);
+        // parse atn states
+        self.read_states(&mut data, &mut atn);
+        // parse atn rules
+        self.read_rules(&mut data, &mut atn);
         atn
     }
 
@@ -113,4 +117,7 @@ impl ATNDeserializer {
             }
         }
     }
+
+    #[inline(always)]
+    fn read_rules(&self, data: &mut Iter<i32>, atn: &mut ATN) {}
 }

@@ -1,5 +1,4 @@
 use crate::token::Token;
-use crate::token_factory::TokenFactory;
 
 /// A source of tokens must provide a sequence of tokens via `next_token()`
 //  and also must reveal it's source of characters; {@link CommonToken}'s text is
