@@ -45,7 +45,7 @@ const ATN_STATE_LOOP_END: StateType = 12;
 pub struct BaseATNState {
     state_nth: usize,
     state_type: StateType,
-    rule_idx: usize,
+    pub(crate) rule_idx: usize,
 }
 
 impl BaseATNState {
@@ -170,32 +170,26 @@ impl ATNState {
     }
 
     #[inline(always)]
-    pub fn state_type(&self) -> StateType {
+    pub fn to_decision_state_mut(&mut self) -> Option<&mut DecisionState> {
         match self {
-            ATNState::Basic(b) => b.state_type,
-            ATNState::RuleStart(r) => todo!(),
-            ATNState::BlockStart(_) => todo!(),
-            ATNState::PlusBlockStart(_) => todo!(),
-            ATNState::StarBlockStart(_) => todo!(),
-            ATNState::TokenStart(_) => todo!(),
-            ATNState::RuleStop(_) => todo!(),
-            ATNState::BlockEnd(_) => todo!(),
-            ATNState::StarLoopback(_) => todo!(),
-            ATNState::StarLoopEntry(_) => todo!(),
-            ATNState::PlusLoopback(_) => todo!(),
-            ATNState::LoopEnd(_) => todo!(),
+            ATNState::BlockStart(b) => Some(&mut b.base),
+            ATNState::PlusBlockStart(p) => Some(&mut p.base.base),
+            ATNState::StarBlockStart(s) => Some(&mut s.base.base),
+            ATNState::TokenStart(t) => Some(&mut t.base),
+            ATNState::StarLoopEntry(s) => Some(&mut s.base),
+            ATNState::PlusLoopback(p) => Some(&mut p.base),
+            _ => None,
         }
     }
 
     #[inline(always)]
-    pub fn to_decision_state_mut(&mut self) -> Option<&mut DecisionState> {
-        todo!()
+    pub fn to_rule_start_state_mut(&mut self) -> Option<&mut RuleStartState> {
+        match self {
+            ATNState::RuleStart(r) => Some(r),
+            _ => None,
+        }
     }
 
-    #[inline(always)]
-    pub fn to_rule_start_state_mut(&mut self) -> Option<&mut RuleStartState> {
-        todo!()
-    }
 }
 
 #[derive(Debug)]
