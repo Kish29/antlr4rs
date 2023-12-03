@@ -1,7 +1,8 @@
 use std::cmp::{max, min};
+use crate::add;
 
 /// [Interval] represents interval equivalent to start..=stop
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Interval {
     start: isize,
     stop: isize,
@@ -11,38 +12,6 @@ impl Interval {
     #[inline(always)]
     fn new(start: isize, stop: isize) -> Self {
         Self { start, stop }
-    }
-
-    // Does this start completely before other? Disjoint
-    #[inline(always)]
-    fn left_disjoint(&self, other: &Interval) -> bool {
-        self.stop < other.start && self.start < other.start
-    }
-
-    #[inline(always)]
-    fn right_disjoint(&self, other: &Interval) -> bool {
-        self.start > other.stop && self.stop > other.stop
-    }
-
-    // Return the interval computed from combining this and other.
-    #[inline(always)]
-    fn union(&self, other: &Interval) -> Interval {
-        Self {
-            start: min(self.start, other.start),
-            stop: max(self.stop, other.stop),
-        }
-    }
-
-    // Are two intervals adjacent such as 0..41 and 42..42?
-    #[inline(always)]
-    fn adjacent(&self, other: &Interval) -> bool {
-        self.start == other.stop + 1 || self.stop == other.start - 1
-    }
-
-    // Are both ranges disjoint? I.e., no overlap?
-    #[inline(always)]
-    fn disjoint(&self, other: &Interval) -> bool {
-        self.left_disjoint(other) || self.right_disjoint(other)
     }
 }
 
@@ -70,41 +39,51 @@ impl IntervalSet {
         self.add_interval(Interval::new(l, r))
     }
 
-    /// insert an interval and guarantee that interval sets are ordered and
-    /// elements adjacent with each other or disjoint with each other.
+    /// Add interval; i.e., add all integers from a to b to set.
+    /// If b<a, do nothing.
+    /// Keep list in sorted order (by left range value).
+    /// If overlap, combine ranges.  For example,
+    /// If this is {1..5, 10..20}, adding 6..7 yields
+    /// {1..5, 6..7, 10..20}.  Adding 4..8 yields {1..8, 10..20}.
     #[inline]
-    fn add_interval(&mut self, addition: Interval) {
-        if addition.stop < addition.start {
+    fn add_interval(&mut self, v: Interval) {
+        if v.stop < v.start {
             return;
         }
         // find insert position in list
         let mut pos = 0;
         while let Some(interval) = self.intervals.get_mut(pos) {
-            if *interval == addition {
+            if *interval == v {
                 return;
             }
-            if addition.adjacent(interval) || !addition.disjoint(interval) {
-                // next to each other, make a single larger interval
-                *interval = addition.union(interval);
-                // make sure we didn't just create an interval that
-                // should be merged with next interval in list.
-                loop {
-                    pos += 1;
-                    let next = match self.intervals.get(pos) {
-                        Some(i) => i,
-                        None => break
-                    };
-                    if !interval.adjacent(next) && interval.disjoint(next) {
-                        break;
+            // v is left disjoint on current.
+            if v.stop < interval.start {
+                self.intervals.insert(pos, v);
+                return;
+            }
+            // v is adjacent on current.
+            if v.stop == interval.start {
+                interval.start = v.start;
+                return;
+            }
+            // v is partial overlap on current.
+            if v.start <= interval.stop {
+                // reassign the more large range one.
+                let union = Interval::new(min(v.start, interval.start), max(v.stop, interval.stop));
+                *interval = union;
+
+                if pos < self.intervals.len() - 1 {
+                    let l = &self.intervals[pos];
+                    let r = &self.intervals[pos + 1];
+                    // if l contains r
+                    if l.stop >= r.stop {
+                        // remove next element.
+                        self.intervals.remove(pos + 1);
+                    } else if l.stop >= r.start {   // if l partial overlap at r
+                        self.intervals[pos] = Interval::new(l.start, r.stop);
+                        self.intervals.remove(pos + 1);
                     }
-                    // if we bump up against or overlap next, merge
-                    self.intervals[pos - 1] = interval.union(next);
-                    self.intervals.remove(pos);
                 }
-                return;
-            }
-            if addition.left_disjoint(interval) {
-                self.intervals.insert(pos, addition);
                 return;
             }
             // if disjoint and right behind current interval, a future iteration will handle it.
@@ -112,6 +91,6 @@ impl IntervalSet {
         }
         // ok, must be after last interval (and disjoint from last interval)
         // just add it.
-        self.intervals.push(addition);
+        self.intervals.push(v);
     }
 }

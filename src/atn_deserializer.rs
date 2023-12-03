@@ -75,16 +75,13 @@ impl ATNDeserializer {
             // create a new atn state
             let mut atn_state = ATNState::new(state_type, rule_idx, nth);
             // push anchors if atn state type is loop end or block start
-            match &mut atn_state {
-                ATNState::BlockStart(bs) => {
-                    bs.block_end_state_nth = *data.next().unwrap() as usize;
-                    bs.contrast_set = true;
-                }
-                ATNState::LoopEnd(le) => {
-                    le.loopback_state_nth = *data.next().unwrap() as usize;
-                    le.contrast_set = true;
-                }
-                _ => (),
+            if let ATNState::LoopEnd(le) = &mut atn_state {
+                le.loopback_state_nth = *data.next().unwrap() as usize;
+                le.contrast_set = true;
+            } else if atn_state.instance_of_block_start() {
+                let bs = atn_state.get_block_start_mut().unwrap();
+                bs.block_end_state_nth = *data.next().unwrap() as usize;
+                bs.contrast_set = true;
             }
             atn.states.push(atn_state);
         }
@@ -142,7 +139,7 @@ impl ATNDeserializer {
             }
         }
 
-        atn.rule2stop_state_nths = Vec::with_capacity(rules_num);
+        atn.rule2stop_state_nths.resize(rules_num, 0);
 
         for nth in 0..atn.states.len() {
             let mut is_stop = false;

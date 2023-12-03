@@ -1,4 +1,4 @@
-pub(crate) type StateType = usize;
+pub(crate) type StateType = i32;
 
 const ATN_STATE_BASIC: StateType = 1;
 
@@ -99,6 +99,27 @@ impl ATNState {
     }
 
     #[inline(always)]
+    pub fn instance_of_block_start(&self) -> bool {
+        match self {
+            ATNState::BlockStart(_) |
+            ATNState::PlusBlockStart(_) |
+            ATNState::StarBlockStart(_) => true,
+            _ => false,
+        }
+    }
+
+    #[inline(always)]
+    pub fn get_block_start_mut(&mut self) -> Option<&mut BlockStartState> {
+        match self {
+            ATNState::BlockStart(bs) => Some(bs),
+            ATNState::PlusBlockStart(pbs) => Some(&mut pbs.base),
+            ATNState::StarBlockStart(sbs) => Some(&mut sbs.base),
+            _ => None
+        }
+    }
+
+
+    #[inline(always)]
     fn new_basic(rule_idx: usize, state_nth: usize) -> ATNState {
         ATNState::Basic(BaseATNState::new(ATN_STATE_BASIC, rule_idx, state_nth))
     }
@@ -189,7 +210,6 @@ impl ATNState {
             _ => None,
         }
     }
-
 }
 
 #[derive(Debug)]

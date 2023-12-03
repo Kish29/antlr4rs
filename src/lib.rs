@@ -37,8 +37,8 @@ pub mod parser;
 pub mod any_ext;
 pub mod common_token_stream;
 mod parser_atn_simulator;
-mod atn_deserializer;
-mod atn_deserialize_option;
+pub mod atn_deserializer;
+pub mod atn_deserialize_option;
 mod interval_set;
 
 pub fn add(left: usize, right: usize) -> usize {
