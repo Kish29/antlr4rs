@@ -33,7 +33,7 @@ pub struct BaseParserRuleContext {
 }
 
 impl BaseParserRuleContext {
-    #[inline(always)]
+    // #[inline(always)]
     pub fn new(parent: Option<Rc<dyn ParserRuleContext>>, invoking_state: isize) -> Self {
         Self {
             base: BaseRuleContext::new(
@@ -49,17 +49,17 @@ impl BaseParserRuleContext {
 }
 
 impl RuleNode for BaseParserRuleContext {
-    #[inline]
+    // #[inline]
     fn rule_context(&self) -> &dyn RuleContext { self }
 }
 
 impl ParseTree for BaseParserRuleContext {
-    #[inline(always)]
+    // #[inline(always)]
     fn accept(&self, visitor: &dyn ParseTreeVisitor) -> Val {
         visitor.visit_children(self)
     }
 
-    #[inline]
+    // #[inline]
     fn text(&self) -> Cow<'_, str> {
         if self.children.len() == 0 {
             return Cow::Borrowed("");
@@ -73,7 +73,7 @@ impl ParseTree for BaseParserRuleContext {
 }
 
 impl SyntaxTree for BaseParserRuleContext {
-    #[inline]
+    // #[inline]
     fn source_start(&self) -> isize {
         match &self.start {
             None => -1,
@@ -81,7 +81,7 @@ impl SyntaxTree for BaseParserRuleContext {
         }
     }
 
-    #[inline]
+    // #[inline]
     fn source_end(&self) -> isize {
         match &self.stop {
             None => -2,
@@ -95,7 +95,7 @@ impl Tree for BaseParserRuleContext {
         self.base.parent()
     }
 
-    #[inline]
+    // #[inline]
     fn child(&self, i: usize) -> Option<&dyn Tree> {
         let cc = self.child_count();
         if cc == 0 || i >= cc {
@@ -104,7 +104,7 @@ impl Tree for BaseParserRuleContext {
         Some(self.children[i].as_ref() as &dyn Tree)
     }
 
-    #[inline]
+    // #[inline]
     fn child_count(&self) -> usize {
         self.children.len()
     }

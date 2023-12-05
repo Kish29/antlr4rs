@@ -22,7 +22,7 @@ pub type CodePoint32BitStream = InputStream<Vec<u32>>;
 
 impl<T: CodePoints> InputStream<T> {
     /// returns a new [InputStream] and owned/clone the data from the `input`
-    #[inline(always)]
+    // #[inline(always)]
     pub fn new(input: T) -> Self {
         Self {
             index: 0,
@@ -33,7 +33,7 @@ impl<T: CodePoints> InputStream<T> {
 }
 
 impl<T: ToOwned + ?Sized> From<&T> for InputStream<T::Owned> where T::Owned: CodePoints {
-    #[inline]
+    // #[inline]
     fn from(input: &T) -> Self {
         let owned = input.to_owned();
         Self {
@@ -45,7 +45,7 @@ impl<T: ToOwned + ?Sized> From<&T> for InputStream<T::Owned> where T::Owned: Cod
 }
 
 impl<T: CodePoints> IntStream for InputStream<T> {
-    #[inline]
+    // #[inline]
     /// Consume(read) one char(rune)
     fn consume(&mut self) {
         // can not read EOF
@@ -68,7 +68,7 @@ impl<T: CodePoints> IntStream for InputStream<T> {
     /// stream.la(-1) ===> int value of 'b'
     /// stream.la(-2) ===> int value of 'a'
     /// stream.la(-10) ===> EOF
-    #[inline]
+    // #[inline]
     fn la(&mut self, i: isize) -> isize {
         if i == 0 {
             panic!("undefined invocation: LA(0)")
@@ -91,12 +91,12 @@ impl<T: CodePoints> IntStream for InputStream<T> {
         EOF
     }
 
-    #[inline]
+    // #[inline]
     fn index(&self) -> isize {
         self.index
     }
 
-    #[inline]
+    // #[inline]
     fn seek(&mut self, index: isize) {
         if index <= self.index {
             self.index = index;
@@ -105,19 +105,19 @@ impl<T: CodePoints> IntStream for InputStream<T> {
         self.index = min(index, self.size)
     }
 
-    #[inline]
+    // #[inline]
     fn size(&self) -> isize {
         self.size
     }
 
-    #[inline]
+    // #[inline]
     fn source_name(&self) -> Cow<'_, str> {
         Cow::Borrowed(INPUT_STREAM_SOURCE_NAME)
     }
 }
 
 impl<T: CodePoints> CharStream for InputStream<T> {
-    #[inline]
+    // #[inline]
     fn text(&self, start: usize, end: usize) -> Cow<'_, str> {
         self.data.text_range(start, end)
     }

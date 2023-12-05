@@ -21,19 +21,19 @@ pub trait TokenFactory {
 pub struct CommonTokenFactory;
 
 impl Default for CommonTokenFactory {
-    #[inline(always)]
+    // #[inline(always)]
     fn default() -> Self { Self {} }
 }
 
 impl CommonTokenFactory {
-    #[inline(always)]
+    // #[inline(always)]
     pub fn new() -> Self { Self {} }
 }
 
 impl TokenFactory for CommonTokenFactory {
     type TK = BaseToken;
 
-    #[inline]
+    // #[inline]
     fn create<S>(
         &self,
         stream: &S,

@@ -75,7 +75,7 @@ impl Default for BaseParseTreeVisitor {
 }
 
 impl ParseTreeVisitor for BaseParseTreeVisitor {
-    #[inline(always)]
+    // #[inline(always)]
     fn visit(&self, tree: &dyn ParseTree) -> Val { tree.accept(self) }
 
     fn visit_children(&self, _node: &dyn RuleNode) -> Val { Nil }

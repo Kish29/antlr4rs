@@ -48,7 +48,7 @@ pub struct BaseLexerATNSimulator {
 
 impl BaseLexerATNSimulator {
 
-    #[inline(always)]
+    // #[inline(always)]
     pub fn new(atn: ATN, shared_ctx_cache: PredictionContextCache) -> Self {
         Self {
             base: BaseATNSimulator::new(atn, shared_ctx_cache),
@@ -59,7 +59,7 @@ impl BaseLexerATNSimulator {
 }
 
 impl ATNSimulator for BaseLexerATNSimulator {
-    #[inline(always)]
+    // #[inline(always)]
     fn shared_context_cache(&self) -> &PredictionContextCache {
         self.base.shared_context_cache()
     }

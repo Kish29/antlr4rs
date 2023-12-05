@@ -15,7 +15,7 @@ pub trait CodePoints {
 }
 
 impl CodePoints for String {
-    #[inline]
+    // #[inline]
     fn code_point_at(&self, pos: usize) -> Option<u32> {
         if pos >= self.len() {
             return None;
@@ -23,12 +23,12 @@ impl CodePoints for String {
         Some(self.chars().nth(pos).unwrap_or(REPLACEMENT_CHARACTER) as u32)
     }
 
-    #[inline]
+    // #[inline]
     fn size(&self) -> usize {
         self.chars().count()
     }
 
-    #[inline]
+    // #[inline]
     fn text_range(&self, start: usize, mut end: usize) -> Cow<'_, str> {
         if start > end || start >= self.len() {
             return Cow::Borrowed("");
@@ -46,7 +46,7 @@ impl CodePoints for String {
 
 /// T convert to `u32` and as `isize`, due to `isize` not implementation the trait `From<u16>`
 impl<T: ?Sized + Copy + Debug + Into<u32>> CodePoints for Vec<T> {
-    #[inline]
+    // #[inline]
     fn code_point_at(&self, pos: usize) -> Option<u32> {
         if pos >= self.len() {
             return None;
@@ -54,12 +54,12 @@ impl<T: ?Sized + Copy + Debug + Into<u32>> CodePoints for Vec<T> {
         Some(self[pos].into())
     }
 
-    #[inline]
+    // #[inline]
     fn size(&self) -> usize {
         self.len()
     }
 
-    #[inline]
+    // #[inline]
     fn text_range(&self, start: usize, mut end: usize) -> Cow<'_, str> {
         if start > end || start >= self.len() {
             return Cow::Borrowed("");
@@ -77,6 +77,7 @@ impl<T: ?Sized + Copy + Debug + Into<u32>> CodePoints for Vec<T> {
 }
 
 /// convert the char index: get the byte index from byte index: `start_char_byte_idx` and pass through `chars_num`
+// #[inline]
 fn byte_idx_by_chars_pass_through(s: &str, start_char_byte_idx: usize, mut chars_num: usize) -> usize {
     let s_len = s.len();
     if start_char_byte_idx >= s_len {

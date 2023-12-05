@@ -19,7 +19,7 @@ pub struct BaseATNSimulator {
 }
 
 impl BaseATNSimulator {
-    #[inline(always)]
+    // #[inline(always)]
     pub fn new(atn: ATN, shared_ctx_cache: PredictionContextCache) -> Self {
         Self {
             atn,
@@ -30,17 +30,17 @@ impl BaseATNSimulator {
 }
 
 impl ATNSimulator for BaseATNSimulator {
-    #[inline(always)]
+    // #[inline(always)]
     fn shared_context_cache(&self) -> &PredictionContextCache {
         &self.shared_ctx_cache
     }
 
-    #[inline(always)]
+    // #[inline(always)]
     fn atn(&self) -> &ATN {
         &self.atn
     }
 
-    #[inline(always)]
+    // #[inline(always)]
     fn decision_to_dfa(&self) -> &Vec<DFA> {
         &self.decision_to_dfa
     }

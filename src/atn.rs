@@ -21,7 +21,7 @@ pub struct ATN {
 }
 
 impl ATN {
-    #[inline(always)]
+    // #[inline(always)]
     pub fn new(grammar_type: ATNType, max_token_type: isize) -> Self {
         Self {
             grammar_type,

@@ -23,7 +23,7 @@ pub struct PredictionContextCache {
 }
 
 impl PredictionContextCache {
-    #[inline(always)]
+    // #[inline(always)]
     pub fn new() -> Self {
         Self { cache: RwLock::new(HashMap::with_capacity(32)) }
     }

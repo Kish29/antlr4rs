@@ -16,12 +16,12 @@ pub struct ATNDeserializer {
 }
 
 impl ATNDeserializer {
-    #[inline]
+    // #[inline]
     pub fn new(options: Option<ATNDeserializeOption>) -> Self {
         Self { des_opt: options.unwrap_or(ATNDeserializeOption::default()) }
     }
 
-    #[inline]
+    // #[inline]
     pub fn deserialize(&self, data: &[i32]) -> ATN {
         let mut data = data.iter();
         self.check_version(&mut data);
@@ -38,7 +38,7 @@ impl ATNDeserializer {
         atn
     }
 
-    #[inline(always)]
+    // #[inline(always)]
     fn check_version(&self, data: &mut Iter<i32>) {
         let ver = data.next().unwrap();
         if (*ver as isize) != SERIALIZED_VERSION {
@@ -46,7 +46,7 @@ impl ATNDeserializer {
         }
     }
 
-    #[inline(always)]
+    // #[inline(always)]
     fn read_atn(&self, data: &mut Iter<i32>) -> ATN {
         ATN::new(
             match *data.next().unwrap() {
@@ -60,7 +60,7 @@ impl ATNDeserializer {
 
     /// parse all states into ATN, use enum type to implement in Rust to decrease dynamic or vtable cost.
     /// just store the nth for contrast ATN state type, how clever I am! ^_^
-    #[inline(always)]
+    // #[inline(always)]
     fn read_states(&self, data: &mut Iter<i32>, atn: &mut ATN) {
         let states_num = *data.next().unwrap() as usize;
         atn.states = Vec::with_capacity(states_num);
@@ -102,7 +102,7 @@ impl ATNDeserializer {
         }
     }
 
-    #[inline(always)]
+    // #[inline(always)]
     fn check_contrast_states(&self, states: &Vec<ATNState>) {
         for atn_state in states {
             match atn_state {
@@ -121,7 +121,7 @@ impl ATNDeserializer {
         }
     }
 
-    #[inline(always)]
+    // #[inline(always)]
     fn read_rules(&self, data: &mut Iter<i32>, atn: &mut ATN) {
         let rules_num = *data.next().unwrap() as usize;
         if atn.grammar_type == ATNType::Lexer {
@@ -161,7 +161,7 @@ impl ATNDeserializer {
         self.check_contrast_rules(&mut atn.states);
     }
 
-    #[inline(always)]
+    // #[inline(always)]
     fn check_contrast_rules(&self, states: &Vec<ATNState>) {
         for atn_state in states {
             match atn_state {
@@ -175,7 +175,7 @@ impl ATNDeserializer {
         }
     }
 
-    #[inline(always)]
+    // #[inline(always)]
     fn read_modes(&self, data: &mut Iter<i32>, atn: &mut ATN) {
         let modes_num = *data.next().unwrap() as usize;
         atn.mode2start_state_nths = Vec::with_capacity(modes_num);
@@ -186,7 +186,7 @@ impl ATNDeserializer {
         }
     }
 
-    #[inline(always)]
+    // #[inline(always)]
     fn read_sets(&self, data: &mut Iter<i32>) -> Vec<IntervalSet> {
         let sets_num = *data.next().unwrap() as usize;
         let mut sets: Vec<IntervalSet> = Vec::with_capacity(sets_num);
@@ -201,6 +201,9 @@ impl ATNDeserializer {
                 set.add_one(-1);
             }
 
+            // in antlr4 for Golang runtime, it written: addRange(l, h+1)
+            // cause Golang slice cut off not support nums[l:=h], that's: not support include right interval
+            // but rust can do that, so just add_range(l, h)
             for _ in 0..n {
                 set.add_range(
                     *data.next().unwrap() as isize,
@@ -213,6 +216,6 @@ impl ATNDeserializer {
         sets
     }
 
-    #[inline(always)]
+    // #[inline(always)]
     fn read_edges(&self, data: &mut Iter<i32>, atn: &mut ATN, sets: Vec<IntervalSet>) {}
 }

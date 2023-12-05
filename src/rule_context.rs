@@ -25,37 +25,37 @@ pub struct BaseRuleContext {
 }
 
 impl BaseRuleContext {
-    #[inline(always)]
+    // #[inline(always)]
     pub fn new(parent: Option<Rc<dyn RuleContext>>, invoking_state: isize) -> Self {
         Self { parent_ctx: parent, invoking_state }
     }
 }
 
 impl RuleNode for BaseRuleContext {
-    #[inline]
+    // #[inline]
     fn rule_context(&self) -> &dyn RuleContext { self }
 }
 
 impl ParseTree for BaseRuleContext {
-    #[inline(always)]
+    // #[inline(always)]
     fn accept(&self, visitor: &dyn ParseTreeVisitor) -> Val {
         visitor.visit_children(self)
     }
 
-    #[inline]
+    // #[inline]
     fn text(&self) -> Cow<'_, str> { Cow::Borrowed("") }
 }
 
 impl SyntaxTree for BaseRuleContext {
-    #[inline]
+    // #[inline]
     fn source_start(&self) -> isize { 0 }
 
-    #[inline]
+    // #[inline]
     fn source_end(&self) -> isize { 0 }
 }
 
 impl Tree for BaseRuleContext {
-    #[inline]
+    // #[inline]
     fn parent(&self) -> Option<&dyn Tree> {
         match self.parent_ctx.as_ref() {
             None => None,
@@ -65,29 +65,29 @@ impl Tree for BaseRuleContext {
         }
     }
 
-    #[inline]
+    // #[inline]
     fn child(&self, _i: usize) -> Option<&dyn Tree> { None }
 
-    #[inline]
+    // #[inline]
     fn child_count(&self) -> usize { 0 }
 }
 
 impl RuleContext for BaseRuleContext {
-    #[inline]
+    // #[inline]
     fn invoking_state(&self) -> isize { self.invoking_state }
 
-    #[inline]
+    // #[inline]
     fn set_invoking_state(&mut self, s: isize) { self.invoking_state = s }
 
-    #[inline]
+    // #[inline]
     fn rule_index(&self) -> isize { 0 }
 
-    #[inline]
+    // #[inline]
     fn is_empty(&self) -> bool { self.invoking_state == -1 }
 
-    #[inline]
+    // #[inline]
     fn alt_number(&self) -> isize { ATN_INVALID_ALT_NUMBER }
 
-    #[inline]
+    // #[inline]
     fn set_alt_number(&mut self, _alt_num: isize) {}
 }

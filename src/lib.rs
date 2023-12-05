@@ -3,8 +3,12 @@
 // Fortunately, this feature will be stabilized soon at this point of time(Thanks for Rust teams),
 // and I look forward to the day when this project finished and I can remove this annotation without concern.
 // See issue: https://github.com/rust-lang/rust/issues/65991
+// todo: remove this
 #![feature(trait_upcasting)]
 #![allow(incomplete_features)]
+
+// todo: look closely at all function annotated by #[inline], consider using it properly.
+
 
 pub mod atn;
 pub mod atn_type;

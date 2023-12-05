@@ -4,34 +4,34 @@ use crate::add;
 /// [Interval] represents interval equivalent to start..=stop
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Interval {
-    start: isize,
-    stop: isize,
+    pub start: isize,
+    pub stop: isize,
 }
 
 impl Interval {
-    #[inline(always)]
+    // #[inline(always)]
     fn new(start: isize, stop: isize) -> Self {
         Self { start, stop }
     }
 }
 
 pub struct IntervalSet {
-    pub intervals: Vec<Interval>,
-    pub read_only: bool,
+    intervals: Vec<Interval>,
+    read_only: bool,
 }
 
 impl IntervalSet {
-    #[inline(always)]
+    // #[inline(always)]
     pub fn new() -> Self {
         Self { intervals: vec![], read_only: false }
     }
 
-    #[inline(always)]
+    // #[inline(always)]
     pub fn add_one(&mut self, v: isize) {
         self.add_range(v, v)
     }
 
-    #[inline(always)]
+    // #[inline(always)]
     pub fn add_range(&mut self, l: isize, r: isize) {
         if self.read_only {
             panic!("modify a read only interval set!.")
@@ -45,7 +45,7 @@ impl IntervalSet {
     /// If overlap, combine ranges.  For example,
     /// If this is {1..5, 10..20}, adding 6..7 yields
     /// {1..5, 6..7, 10..20}.  Adding 4..8 yields {1..8, 10..20}.
-    #[inline]
+    // #[inline]
     fn add_interval(&mut self, v: Interval) {
         if v.stop < v.start {
             return;

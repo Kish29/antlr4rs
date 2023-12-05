@@ -66,7 +66,7 @@ pub struct BaseToken {
 }
 
 impl BaseToken {
-    #[inline(always)]
+    // #[inline(always)]
     pub fn new(
         token_type: isize,
         channel: isize,
@@ -99,12 +99,12 @@ impl Display for BaseToken {
 }
 
 impl Token for BaseToken {
-    #[inline]
+    // #[inline]
     fn token_type(&self) -> isize {
         self.token_type
     }
 
-    #[inline]
+    // #[inline]
     fn text(&self) -> Cow<'_, str> {
         return if self.token_type == TOKEN_EOF {
             Cow::Borrowed(TEXT_EOF)
@@ -113,12 +113,12 @@ impl Token for BaseToken {
         };
     }
 
-    #[inline]
+    // #[inline]
     fn token_index(&self) -> isize {
         self.token_index.load(Ordering::Relaxed)
     }
 
-    #[inline]
+    // #[inline]
     fn set_token_index(&self, idx: isize) {
         self.token_index.store(idx, Ordering::Relaxed)
     }

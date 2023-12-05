@@ -44,7 +44,7 @@ impl Val {
 
     // todo: work out for type, try_into, must_into, try_to, must_to, arb_into, arb_to
 
-    #[inline]
+    // #[inline]
     pub fn try_into_i64(self) -> Option<i64> {
         match self {
             Uint64(n) => {
@@ -62,7 +62,7 @@ impl Val {
         }
     }
 
-    #[inline]
+    // #[inline]
     pub fn to_u64(self) -> Option<u64> {
         match self {
             Uint64(n) => Some(n),
@@ -82,7 +82,7 @@ impl Val {
         }
     }
 
-    #[inline]
+    // #[inline]
     pub fn to_f64(self) -> Option<f64> {
         match self {
             Float64(f) => Some(f),
@@ -100,7 +100,7 @@ impl Val {
         }
     }
 
-    #[inline]
+    // #[inline]
     pub fn to_bool(self) -> Option<bool> {
         match self {
             Bool(b) => Some(b),
@@ -108,7 +108,7 @@ impl Val {
         }
     }
 
-    #[inline]
+    // #[inline]
     pub fn must_i64(self) -> i64 {
         match self.try_into_i64() {
             Some(n) => n,
@@ -116,7 +116,7 @@ impl Val {
         }
     }
 
-    #[inline]
+    // #[inline]
     pub fn must_u64(self) -> u64 {
         match self.to_u64() {
             Some(n) => n,
@@ -124,7 +124,7 @@ impl Val {
         }
     }
 
-    #[inline]
+    // #[inline]
     pub fn must_f64(self) -> f64 {
         match self.to_f64() {
             Some(n) => n,
@@ -132,7 +132,7 @@ impl Val {
         }
     }
 
-    #[inline]
+    // #[inline]
     pub fn must_bool(self) -> bool {
         match self {
             Bool(b) => b,
@@ -141,7 +141,7 @@ impl Val {
     }
 
     /// convert to i64 arbitrary
-    #[inline]
+    // #[inline]
     pub fn arb_to_i64(&self) -> Option<i64> {
         match self {
             Uint64(n) => Some(n.clone() as i64),
@@ -160,7 +160,7 @@ impl Val {
     }
 
 
-    #[inline]
+    // #[inline]
     pub fn arb_to_u64(&self) -> Option<u64> {
         todo!()
     }

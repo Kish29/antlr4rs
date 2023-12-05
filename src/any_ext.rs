@@ -18,18 +18,18 @@ pub enum CastErr {
     DowncastFailed,
 }
 
-#[inline(always)]
+// #[inline(always)]
 pub fn it_is<S: 'static + ?Sized, T: 'static + Sized>(s: &S) -> bool {
     s.type_id() == TypeId::of::<T>()
 }
 
 impl dyn AnyExt {
-    #[inline(always)]
+    // #[inline(always)]
     pub fn is<T: Sized + 'static>(&self) -> bool {
         self.type_id() == TypeId::of::<T>()
     }
 
-    #[inline]
+    // #[inline]
     pub fn try_downcast_ref<T>(&self) -> Result<&T, CastErr> where T: Sized + 'static {
         if self.is::<T>() {
             return match (self as &dyn Any).downcast_ref::<T>() {
@@ -42,7 +42,7 @@ impl dyn AnyExt {
         Err(CastErr::TypeIdNotMatch)
     }
 
-    #[inline]
+    // #[inline]
     pub fn try_downcast_mut<T>(&mut self) -> Result<&mut T, CastErr> where T: Sized + 'static {
         if self.is::<T>() {
             return match (self as &mut dyn Any).downcast_mut::<T>() {
