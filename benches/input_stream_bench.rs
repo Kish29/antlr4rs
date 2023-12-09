@@ -1,4 +1,4 @@
-use criterion::{black_box, Criterion, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
 use antlr4rs::char_stream::{CharStream};
 use antlr4rs::input_stream::{CodePoint32BitStream, StringStream};
 

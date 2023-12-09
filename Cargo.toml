@@ -14,5 +14,6 @@ serde_json = "1.0.107"
 criterion = "^0.5"
 
 [[bench]]
-name = "input_stream_bench"
+#name = "input_stream_bench"
+name = "deserialize_atn_bench"
 harness = false

@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::atn_state::{ATNState, StateType};
+use crate::atn_state::{ATNState, ATNStateType};
 use crate::atn_type::ATNType;
 use crate::lexer_action::LexerAction;
 
@@ -8,10 +8,10 @@ pub(crate) const ATN_INVALID_ALT_NUMBER: isize = 0;
 #[derive(Debug)]
 pub struct ATN {
     pub(crate) grammar_type: ATNType,
-    decision_to_state: Vec<StateType>,
-    lexer_actions: Vec<LexerAction>,
+    pub(crate) decision2state_nth: Vec<usize>,
+    pub(crate) lexer_actions: Vec<LexerAction>,
     max_token_type: isize,
-    mode_name_to_start_state: HashMap<String, StateType>,
+    mode_name_to_start_state: HashMap<String, ATNStateType>,
     pub(crate) mode2start_state_nths: Vec<usize>,
     pub(crate) rule2start_state_nths: Vec<usize>,
     pub(crate) rule2stop_state_nths: Vec<usize>,
@@ -25,7 +25,7 @@ impl ATN {
     pub fn new(grammar_type: ATNType, max_token_type: isize) -> Self {
         Self {
             grammar_type,
-            decision_to_state: vec![],
+            decision2state_nth: vec![],
             lexer_actions: vec![],
             max_token_type,
             mode_name_to_start_state: HashMap::new(),

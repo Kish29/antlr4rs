@@ -44,6 +44,7 @@ mod parser_atn_simulator;
 pub mod atn_deserializer;
 pub mod atn_deserialize_option;
 mod interval_set;
+mod transition;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right

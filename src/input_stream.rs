@@ -33,7 +33,7 @@ impl<T: CodePoints> InputStream<T> {
 }
 
 impl<T: ToOwned + ?Sized> From<&T> for InputStream<T::Owned> where T::Owned: CodePoints {
-    // #[inline]
+    // #[inline(always)]
     fn from(input: &T) -> Self {
         let owned = input.to_owned();
         Self {
