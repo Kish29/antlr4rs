@@ -1,34 +1,38 @@
 use std::collections::HashMap;
-use crate::atn_state::ATNState;
+use crate::atn_state::{ATNState, ATNStateType};
 use crate::atn_type::ATNType;
 use crate::lexer_action::LexerAction;
 
+pub(crate) const ATN_INVALID_ALT_NUMBER: isize = 0;
+
+#[derive(Debug)]
 pub struct ATN {
     pub(crate) grammar_type: ATNType,
-    pub(crate) decision_to_state: Vec<ATNState>,
+    pub(crate) decision2state_nth: Vec<usize>,
     pub(crate) lexer_actions: Vec<LexerAction>,
-    pub(crate) max_token_type: isize,
-    pub(crate) mode_name_to_start_state: HashMap<String, ATNState>,
-    pub(crate) mode_to_start_state: Vec<ATNState>,
-    pub(crate) rule_to_start_state: Vec<ATNState>,
-    pub(crate) rule_to_stop_state: Vec<ATNState>,
-    pub(crate) rule_to_token_type: Vec<isize>,
+    max_token_type: isize,
+    mode_name_to_start_state: HashMap<String, ATNStateType>,
+    pub(crate) mode2start_state_nths: Vec<usize>,
+    pub(crate) rule2start_state_nths: Vec<usize>,
+    pub(crate) rule2stop_state_nths: Vec<usize>,
+    pub(crate) rule2token_type: Vec<usize>,
 
     pub(crate) states: Vec<ATNState>,
 }
 
 impl ATN {
-    pub(crate) fn new(grammar_type: ATNType, max_token_type: isize) -> Self {
+    // #[inline(always)]
+    pub fn new(grammar_type: ATNType, max_token_type: isize) -> Self {
         Self {
             grammar_type,
-            decision_to_state: vec![],
+            decision2state_nth: vec![],
             lexer_actions: vec![],
             max_token_type,
             mode_name_to_start_state: HashMap::new(),
-            mode_to_start_state: vec![],
-            rule_to_start_state: vec![],
-            rule_to_stop_state: vec![],
-            rule_to_token_type: vec![],
+            mode2start_state_nths: vec![],
+            rule2start_state_nths: vec![],
+            rule2stop_state_nths: vec![],
+            rule2token_type: vec![],
             states: vec![],
         }
     }

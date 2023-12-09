@@ -2,8 +2,6 @@ use std::borrow::Cow;
 use std::char::REPLACEMENT_CHARACTER;
 use std::fmt::Debug;
 
-const TEXT_RANGE_EOF: &'static str = "<EOF>";
-
 pub trait CodePoints {
     /// code point at the `pos` of [CodePoints] and try to convert to [u32].
     /// sting type must be indexed by the interpreter as the characters
@@ -13,12 +11,11 @@ pub trait CodePoints {
 
     /// returns the text for the interval `start`..`end` of characters within this CodePoints
     /// include the end index, the symbol of each must convert to character
-    /// must returns "<EOF>" if index out of range
     fn text_range(&self, start: usize, end: usize) -> Cow<'_, str>;
 }
 
 impl CodePoints for String {
-    #[inline]
+    // #[inline]
     fn code_point_at(&self, pos: usize) -> Option<u32> {
         if pos >= self.len() {
             return None;
@@ -26,15 +23,15 @@ impl CodePoints for String {
         Some(self.chars().nth(pos).unwrap_or(REPLACEMENT_CHARACTER) as u32)
     }
 
-    #[inline]
+    // #[inline]
     fn size(&self) -> usize {
         self.chars().count()
     }
 
-    #[inline]
+    // #[inline]
     fn text_range(&self, start: usize, mut end: usize) -> Cow<'_, str> {
         if start > end || start >= self.len() {
-            return Cow::Borrowed(TEXT_RANGE_EOF);
+            return Cow::Borrowed("");
         }
         if end >= self.len() {
             end = self.len() - 1;
@@ -49,7 +46,7 @@ impl CodePoints for String {
 
 /// T convert to `u32` and as `isize`, due to `isize` not implementation the trait `From<u16>`
 impl<T: ?Sized + Copy + Debug + Into<u32>> CodePoints for Vec<T> {
-    #[inline]
+    // #[inline]
     fn code_point_at(&self, pos: usize) -> Option<u32> {
         if pos >= self.len() {
             return None;
@@ -57,15 +54,15 @@ impl<T: ?Sized + Copy + Debug + Into<u32>> CodePoints for Vec<T> {
         Some(self[pos].into())
     }
 
-    #[inline]
+    // #[inline]
     fn size(&self) -> usize {
         self.len()
     }
 
-    #[inline]
+    // #[inline]
     fn text_range(&self, start: usize, mut end: usize) -> Cow<'_, str> {
         if start > end || start >= self.len() {
-            return Cow::Borrowed(TEXT_RANGE_EOF);
+            return Cow::Borrowed("");
         }
         if end >= self.len() {
             end = self.len() - 1;
@@ -80,6 +77,7 @@ impl<T: ?Sized + Copy + Debug + Into<u32>> CodePoints for Vec<T> {
 }
 
 /// convert the char index: get the byte index from byte index: `start_char_byte_idx` and pass through `chars_num`
+// #[inline]
 fn byte_idx_by_chars_pass_through(s: &str, start_char_byte_idx: usize, mut chars_num: usize) -> usize {
     let s_len = s.len();
     if start_char_byte_idx >= s_len {

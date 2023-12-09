@@ -4,7 +4,7 @@ use antlr4rs::int_stream::EOF;
 
 #[test]
 fn test_input_stream() {
-    let mut input = StringStream::new(r#"A你4好§，\❤"#.to_string());
+    let mut input = StringStream::from(r#"A你4好§，\❤"#);
     let input = &mut input as &mut dyn CharStream;
     assert_eq!(input.size(), 8);
     assert_eq!(input.la(1), 'A' as isize);

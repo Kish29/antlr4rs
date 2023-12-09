@@ -1,5 +1,5 @@
 use crate::atn::ATN;
-use crate::atn_simulator::ATNSimulator;
+use crate::atn_simulator::{ATNSimulator, BaseATNSimulator};
 use crate::char_stream::CharStream;
 use crate::dfa::DFA;
 use crate::lexer::LEXER_DEFAULT_MODE;
@@ -41,13 +41,17 @@ impl SimState {
 }
 
 pub struct BaseLexerATNSimulator {
+    base: BaseATNSimulator,
     pub(crate) mode: isize,
     prev_accept: SimState,
 }
 
 impl BaseLexerATNSimulator {
-    pub fn new() -> Self {
+
+    // #[inline(always)]
+    pub fn new(atn: ATN, shared_ctx_cache: PredictionContextCache) -> Self {
         Self {
+            base: BaseATNSimulator::new(atn, shared_ctx_cache),
             mode: LEXER_DEFAULT_MODE,
             prev_accept: SimState::new(),
         }
@@ -55,8 +59,9 @@ impl BaseLexerATNSimulator {
 }
 
 impl ATNSimulator for BaseLexerATNSimulator {
+    // #[inline(always)]
     fn shared_context_cache(&self) -> &PredictionContextCache {
-        todo!()
+        self.base.shared_context_cache()
     }
 
     fn atn(&self) -> &ATN {

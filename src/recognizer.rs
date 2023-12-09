@@ -1,26 +1,27 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 use crate::error_listener::ErrorListener;
-use crate::atn::ATN;
 use crate::errors::ANTLRError;
 use crate::rule_context::RuleContext;
 
 pub trait Recognizer {
     fn literal_names(&self) -> &[&str];
 
+    fn symbolic_names(&self) -> &[&str];
+
     fn rule_names(&self) -> &[&str];
 
-    fn sempred(&self, _local_ctx: Rc<dyn RuleContext>, _rule_idx: isize, _action_idx: isize) -> bool { true }
+    fn sempred(&self, _local_ctx: Rc<dyn RuleContext>, _rule_idx: isize, _action_idx: isize) -> bool;
 
-    fn precpred(&self, _local_ctx: Rc<dyn RuleContext>, _precedence: isize) -> bool { true }
+    fn precpred(&self, _local_ctx: Rc<dyn RuleContext>, _precedence: isize) -> bool;
 
-    fn atn(&self) -> &ATN;
+    // fn atn(&self) -> &ATN;
 
     fn state(&self) -> isize;
 
     fn set_state(&mut self, state: isize);
 
-    fn action(&self, _local_ctx: Rc<dyn RuleContext>, _rule_idx: isize, _action_idx: isize) {}
+    fn action(&self, _local_ctx: Rc<dyn RuleContext>, _rule_idx: isize, _action_idx: isize);
 
     fn add_error_listener(&mut self, l: Rc<RefCell<dyn ErrorListener>>);
 
@@ -47,6 +48,7 @@ pub struct BaseRecognizer {
 }
 
 impl BaseRecognizer {
+    // #[inline(always)]
     pub fn new(
         rule_names: &'static [&'static str],
         literal_names: &'static [&'static str],
@@ -70,6 +72,10 @@ impl Recognizer for BaseRecognizer {
         self.literal_names
     }
 
+    fn symbolic_names(&self) -> &[&str] {
+        self.symbolic_names
+    }
+
     fn rule_names(&self) -> &[&str] {
         self.rule_names
     }
@@ -82,9 +88,9 @@ impl Recognizer for BaseRecognizer {
         todo!()
     }
 
-    fn atn(&self) -> &ATN {
+    /*fn atn(&self) -> &ATN {
         todo!()
-    }
+    }*/
 
     fn state(&self) -> isize {
         todo!()
