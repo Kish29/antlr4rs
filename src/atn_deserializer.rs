@@ -11,7 +11,7 @@ use crate::interval_set::IntervalSet;
 use crate::lexer_action::LexerAction;
 use crate::transition::{Transition, TransitionType};
 
-const SERIALIZED_VERSION: isize = 1;
+const SERIALIZED_VERSION: isize = 4;
 
 #[derive(Debug)]
 pub struct ATNDeserializer {
