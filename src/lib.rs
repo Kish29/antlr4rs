@@ -40,11 +40,14 @@ pub mod lexer_action;
 pub mod parser;
 pub mod any_ext;
 pub mod common_token_stream;
-mod parser_atn_simulator;
+pub mod parser_atn_simulator;
 pub mod atn_deserializer;
 pub mod atn_deserialize_option;
-mod interval_set;
-mod transition;
+pub mod interval_set;
+pub mod transition;
+
+/// use [Nth] to present a target position
+pub type Nth = usize;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right

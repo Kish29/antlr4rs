@@ -1,6 +1,34 @@
+use crate::atn::ATN;
+use crate::atn_state::ATNState;
+use crate::Nth;
+
 #[derive(Debug)]
 pub struct DFA {
-    // pub(crate) atn_start_state: /*todo*/
-    pub(crate) decision: isize,
+    // decision to atn state position
+    pub dcs2state_nth: Nth,
+    pub decision: usize,
 
+    // state 0
+    pub s0: Option<Nth>,
+
+    pub precedence_dfa: bool,
+}
+
+impl DFA {
+    // #[inline]
+    pub fn new(atn: &ATN, dcs2state_nth: usize, decision: usize) -> Self {
+        let mut dfa = Self {
+            dcs2state_nth,
+            decision,
+            s0: None,
+            precedence_dfa: false,
+        };
+        if let ATNState::StarLoopEntry(sle) = &atn.states[dcs2state_nth] {
+            if sle.precedence_decision {
+                dfa.precedence_dfa = true;
+                todo!()
+            }
+        }
+        dfa
+    }
 }

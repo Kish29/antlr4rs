@@ -2,7 +2,7 @@ use std::cmp::{max, min};
 use crate::add;
 
 /// [Interval] represents interval equivalent to start..=stop
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Interval {
     pub start: isize,
     pub stop: isize,
@@ -15,7 +15,7 @@ impl Interval {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IntervalSet {
     intervals: Vec<Interval>,
     read_only: bool,

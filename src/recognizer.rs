@@ -23,7 +23,7 @@ pub trait Recognizer {
 
     fn action(&self, _local_ctx: Rc<dyn RuleContext>, _rule_idx: isize, _action_idx: isize);
 
-    fn add_error_listener(&mut self, l: Rc<RefCell<dyn ErrorListener>>);
+    fn add_error_listener(&mut self, l: Box<dyn ErrorListener>);
 
     fn remove_error_listeners(&mut self);
 
@@ -37,7 +37,7 @@ pub trait Recognizer {
 }
 
 pub struct BaseRecognizer {
-    listeners: Vec<Rc<dyn ErrorListener>>,
+    listeners: Vec<Box<dyn ErrorListener>>,
     state: isize,
 
     rule_names: &'static [&'static str],
@@ -104,8 +104,8 @@ impl Recognizer for BaseRecognizer {
         todo!()
     }
 
-    fn add_error_listener(&mut self, l: Rc<RefCell<dyn ErrorListener>>) {
-        todo!()
+    fn add_error_listener(&mut self, l: Box<dyn ErrorListener>) {
+        self.listeners.push(l)
     }
 
     fn remove_error_listeners(&mut self) {

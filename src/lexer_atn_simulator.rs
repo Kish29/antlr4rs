@@ -1,3 +1,4 @@
+use std::sync::{Arc, RwLock};
 use crate::atn::ATN;
 use crate::atn_simulator::{ATNSimulator, BaseATNSimulator};
 use crate::char_stream::CharStream;
@@ -47,11 +48,10 @@ pub struct BaseLexerATNSimulator {
 }
 
 impl BaseLexerATNSimulator {
-
     // #[inline(always)]
-    pub fn new(atn: ATN, shared_ctx_cache: PredictionContextCache) -> Self {
+    pub fn new(atn: Arc<ATN>, shared_ctx_cache: Arc<RwLock<PredictionContextCache>>, decision_to_dfa: Arc<Vec<RwLock<DFA>>>) -> Self {
         Self {
-            base: BaseATNSimulator::new(atn, shared_ctx_cache),
+            base: BaseATNSimulator::new(atn, shared_ctx_cache, decision_to_dfa),
             mode: LEXER_DEFAULT_MODE,
             prev_accept: SimState::new(),
         }
@@ -60,7 +60,7 @@ impl BaseLexerATNSimulator {
 
 impl ATNSimulator for BaseLexerATNSimulator {
     // #[inline(always)]
-    fn shared_context_cache(&self) -> &PredictionContextCache {
+    fn shared_context_cache(&self) -> &RwLock<PredictionContextCache> {
         self.base.shared_context_cache()
     }
 
@@ -68,7 +68,7 @@ impl ATNSimulator for BaseLexerATNSimulator {
         todo!()
     }
 
-    fn decision_to_dfa(&self) -> &Vec<DFA> {
+    fn decision_to_dfa(&self) -> &Vec<RwLock<DFA>> {
         todo!()
     }
 }

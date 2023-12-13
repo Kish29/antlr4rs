@@ -26,20 +26,20 @@ impl ErrorListener for MyANTLRErrorListener {
 
 #[test]
 fn test_antlr_workaround() {
-    let recognizer = BaseRecognizer::new(
-        RULE_NAMES,
-        LITERAL_NAMES,
-        SYMBOLIC_NAMES,
-        GRAMMAR_FILE_NAME,
-    );
-    let lexer = BaseLexer::new(
-        recognizer,
-        BaseLexerATNSimulator::new(
-            ATN::new(ATNType::Lexer, 0),
-            PredictionContextCache::new(),
-        ),
-        CommonTokenFactory::new(),
-        StringStream::from("this is char stream"),
-    );
-    let cts = CommonTokenStream::new(lexer, 0);
+    // let recognizer = BaseRecognizer::new(
+    //     RULE_NAMES,
+    //     LITERAL_NAMES,
+    //     SYMBOLIC_NAMES,
+    //     GRAMMAR_FILE_NAME,
+    // );
+    // let lexer = BaseLexer::new(
+    //     recognizer,
+    //     BaseLexerATNSimulator::new(
+    //         ATN::new(ATNType::Lexer, 0),
+    //         PredictionContextCache::new(),
+    //     ),
+    //     CommonTokenFactory::new(),
+    //     StringStream::from("this is char stream"),
+    // );
+    // let cts = CommonTokenStream::new(lexer, 0);
 }

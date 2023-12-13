@@ -1,4 +1,3 @@
-use std::rc::Rc;
 /// [ATNDeserializer] deserialize i32 array into ATN struct.
 /// i32 array place data in this order
 /// | serialized-version, atn-states-num, {atn-state-type, rule-index, {contrast-nth}\*}\*, non-greedy-states-num, {non-greedy-nth}\*, precedence-states-num, {precedence-nth}\* |
@@ -9,6 +8,7 @@ use crate::atn_state::{ATNState, ATNStateType};
 use crate::atn_type::ATNType;
 use crate::interval_set::IntervalSet;
 use crate::lexer_action::LexerAction;
+use crate::Nth;
 use crate::transition::{Transition, TransitionType};
 
 const SERIALIZED_VERSION: isize = 4;
@@ -86,11 +86,11 @@ impl ATNDeserializer {
             let mut atn_state = ATNState::new(state_type, rule_idx, nth);
             // push anchors if atn state type is loop end or block start
             if let ATNState::LoopEnd(le) = &mut atn_state {
-                le.loopback_state_nth = *data.next().unwrap() as usize;
+                le.loopback_state_nth = *data.next().unwrap() as Nth;
                 le.contrast_set = true;
             } else if atn_state.instance_of_block_start() {
                 let bs = atn_state.to_block_start_mut().unwrap();
-                bs.block_end_state_nth = *data.next().unwrap() as usize;
+                bs.block_end_state_nth = *data.next().unwrap() as Nth;
                 bs.contrast_set = true;
             }
             atn.states.push(atn_state);
@@ -99,13 +99,13 @@ impl ATNDeserializer {
         // check whether all block start and loopback has been set to it's peer correctly.
         let non_greedy_states_num = *data.next().unwrap() as usize;
         for _ in 0..non_greedy_states_num {
-            let nth = *data.next().unwrap() as usize;
+            let nth = *data.next().unwrap() as Nth;
             atn.states[nth].to_decision_state_mut().unwrap().non_greedy = true;
         }
 
         let precedence_states_num = *data.next().unwrap() as usize;
         for _ in 0..precedence_states_num {
-            let nth = *data.next().unwrap() as usize;
+            let nth = *data.next().unwrap() as Nth;
             atn.states[nth].to_rule_start_state_mut().unwrap().left_recursive = true;
         }
     }
@@ -119,11 +119,11 @@ impl ATNDeserializer {
         }
 
         for _ in 0..rules_num {
-            let rs_nth = *data.next().unwrap() as usize;
+            let rs_nth = *data.next().unwrap() as Nth;
             atn.rule2start_state_nths.push(rs_nth);
 
             if atn.grammar_type == ATNType::Lexer {
-                let token_type = *data.next().unwrap() as usize;
+                let token_type = *data.next().unwrap() as isize;
                 atn.rule2token_type.push(token_type);
             }
         }
@@ -154,15 +154,15 @@ impl ATNDeserializer {
         atn.mode2start_state_nths = Vec::with_capacity(modes_num);
 
         for _ in 0..modes_num {
-            let token_start_state_nth = *data.next().unwrap() as usize;
+            let token_start_state_nth = *data.next().unwrap() as Nth;
             atn.mode2start_state_nths.push(token_start_state_nth);
         }
     }
 
     // #[inline(always)]
-    fn read_sets(&self, data: &mut Iter<i32>) -> Vec<Rc<IntervalSet>> {
+    fn read_sets(&self, data: &mut Iter<i32>) -> Vec<IntervalSet> {
         let sets_num = *data.next().unwrap() as usize;
-        let mut sets: Vec<Rc<IntervalSet>> = Vec::with_capacity(sets_num);
+        let mut sets: Vec<IntervalSet> = Vec::with_capacity(sets_num);
 
         for _ in 0..sets_num {
             let mut set = IntervalSet::new();
@@ -184,20 +184,20 @@ impl ATNDeserializer {
                     *data.next().unwrap() as isize,
                 );
             }
-            sets.push(Rc::new(set))
+            sets.push(set)
         }
 
         sets
     }
 
     // #[inline(always)]
-    fn read_edges(&self, data: &mut Iter<i32>, atn: &mut ATN, sets: Vec<Rc<IntervalSet>>) {
+    fn read_edges(&self, data: &mut Iter<i32>, atn: &mut ATN, sets: Vec<IntervalSet>) {
         // Thank you Rust borrow checker :), you drove me mad when I write these trashes.
 
         let edges_num = *data.next().unwrap() as usize;
         for _ in 0..edges_num {
-            let src = *data.next().unwrap() as usize;
-            let trg = *data.next().unwrap() as usize;
+            let src = *data.next().unwrap() as Nth;
+            let trg = *data.next().unwrap() as Nth;
             let ttype = *data.next().unwrap() as TransitionType;
             let arg1 = *data.next().unwrap() as isize;
             let arg2 = *data.next().unwrap() as isize;
@@ -295,7 +295,7 @@ impl ATNDeserializer {
         atn.decision2state_nth = Vec::with_capacity(decisions_num);
 
         for i in 0..decisions_num {
-            let pos = *data.next().unwrap() as usize;
+            let pos = *data.next().unwrap() as Nth;
             atn.decision2state_nth.push(pos);
             atn.states[pos].to_decision_state_mut().unwrap().decision = i as isize;
         }
