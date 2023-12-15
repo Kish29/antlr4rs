@@ -1,6 +1,6 @@
+use std::any::Any;
 use std::borrow::Cow;
 use std::fmt::Debug;
-use crate::any_ext::AnyExt;
 use crate::rule_context::RuleContext;
 use crate::token::Token;
 use crate::value::Val;
@@ -13,7 +13,7 @@ use crate::value::Val::Nil;
 
 /// The basic notion of a tree has a parent, a payload, and a list of children.
 /// It is the most abstract interface for all the trees used by ANTLR.
-pub trait Tree: AnyExt {
+pub trait Tree: Any + 'static {
     // fn tid(&self) -> usize { 0 }
 
     /// The parent of this node. a
@@ -57,7 +57,7 @@ pub trait TerminalNode: ParseTree {
 
 pub trait ErrorNode: TerminalNode {}
 
-pub trait ParseTreeVisitor: AnyExt {
+pub trait ParseTreeVisitor: Any + 'static {
     fn visit(&self, tree: &dyn ParseTree) -> Val;
 
     fn visit_children(&self, node: &dyn RuleNode) -> Val;

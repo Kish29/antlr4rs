@@ -1,8 +1,8 @@
+use std::any::Any;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::rc::Rc;
 use std::sync::Arc;
-use crate::any_ext::AnyExt;
 use crate::value::Val::{Str, Bool, Uint64, Int64, Float64};
 
 pub type StructType = HashMap<String, Val>;
@@ -34,10 +34,10 @@ pub enum Val {
     StrSRef(&'static str),
     Arr(Vec<Val>),
     Struct(StructType),
-    AnyBox(Box<dyn AnyExt>),
-    AnyRc(Rc<dyn AnyExt>),
-    AnyArc(Arc<dyn AnyExt>),
-    AnySRef(&'static dyn AnyExt),
+    AnyBox(Box<dyn Any>),
+    AnyRc(Rc<dyn Any>),
+    AnyArc(Arc<dyn Any>),
+    AnySRef(&'static dyn Any),
 }
 
 impl Val {

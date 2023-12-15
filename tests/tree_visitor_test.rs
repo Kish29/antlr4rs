@@ -4,7 +4,6 @@
 use std::any::Any;
 use std::borrow::Cow;
 use std::fmt::Debug;
-use antlr4rs::any_ext::{it_is, AnyExt};
 use antlr4rs::input_stream::StringStream;
 use antlr4rs::parser_rule_context::BaseParserRuleContext;
 use antlr4rs::rule_context::RuleContext;
@@ -61,22 +60,11 @@ impl Tree for MyParseTree {
 
 impl ParseTree for MyParseTree {
     fn accept(&self, visitor: &dyn ParseTreeVisitor) -> Val {
-        // not graceful
-        /*if visitor.type_id() == TypeId::of::<MyParseTreeVisitor>() {
-            return (visitor as &dyn Any).downcast_ref::<MyParseTreeVisitor>().unwrap().visit_custom(self);
-        }*/
-        // use this
-        match (visitor as &dyn AnyExt).try_downcast_ref::<MyParseTreeVisitor>() {
-            // match any_ext::try_downcast_ref::<MyParseTreeVisitor>(visitor as &dyn AnyExt) {
-            Ok(p) => {
-                println!("MyParseTree recognized MyParseTreeVisitor");
-                p.visit_custom(self)
-            }
-            Err(e) => {
-                println!("cast to MyParseTreeVisitor failed. error: {:?}", e);
-                self.base.accept(visitor)
-            }
+        if let Some(mptv) = (visitor as &dyn Any).downcast_ref::<MyParseTreeVisitor>() {
+            println!("MyParseTree recognized MyParseTreeVisitor");
+            return mptv.visit_custom(self);
         }
+        self.base.accept(visitor)
     }
 
     fn text(&self) -> Cow<'_, str> {
@@ -97,12 +85,11 @@ impl MyParseTreeVisitor {
 
 impl ParseTreeVisitor for MyParseTreeVisitor {
     fn visit(&self, tree: &dyn ParseTree) -> Val {
-        if it_is::<dyn ParseTree, MyParseTree>(tree) {
-            println!("{:?}", (tree as &dyn Any).downcast_ref::<MyParseTree>().unwrap().accept_custom(self));
-            println!("visit tree type is MyParseTree, id: {:?}", tree.type_id())
+        if let Some(mp) = (tree as &dyn Any).downcast_ref::<MyParseTree>() {
+            println!("visit tree type is MyParseTree, id: {:?}", tree.type_id());
+            return mp.accept_custom(self);
         }
         tree.accept(self)
-        // Str("visit".to_string())
     }
 
     fn visit_children(&self, node: &dyn RuleNode) -> Val {

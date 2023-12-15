@@ -38,7 +38,6 @@ pub mod error_listener;
 pub mod errors;
 pub mod lexer_action;
 pub mod parser;
-pub mod any_ext;
 pub mod common_token_stream;
 pub mod parser_atn_simulator;
 pub mod atn_deserializer;
@@ -48,18 +47,3 @@ pub mod transition;
 
 /// use [Nth] to present a target position
 pub type Nth = usize;
-
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
