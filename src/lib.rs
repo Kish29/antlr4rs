@@ -49,6 +49,32 @@ pub mod transition;
 /// use [Nth] to present a target position
 pub type Nth = usize;
 
+#[macro_export]
+macro_rules! downcast_trait_ref {
+    ($src: expr, $dst: tt) => {
+        if $src.does_impl(&TypeId::of::<dyn $dst>()) {
+            use std::mem;
+            let coerce: &dyn $dst = unsafe { mem::transmute($src) };
+            Some(coerce)
+        } else {
+            None
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! downcast_trait_mut {
+    ($src: expr, $dst: tt) => {
+        if $src.does_impl(&TypeId::of::<dyn $dst>()) {
+            let coerce: &mut dyn $dst = unsafe { mem::transmute($src) };
+            Some(coerce)
+        } else {
+            None
+        }
+    };
+}
+
+
 pub fn add(left: usize, right: usize) -> usize {
     left + right
 }

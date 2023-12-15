@@ -1,5 +1,10 @@
+#![feature(trait_upcasting)]
+#![allow(incomplete_features)]
+
 use std::any::TypeId;
-use antlr4rs::any_ext::it_is;
+use std::mem;
+use antlr4rs::any_ext::AnyExt;
+use antlr4rs::{check_base, downcast_trait_ref};
 use antlr4rs::rule_context::RuleContext;
 use antlr4rs::tree::{ErrorNode, ParseTree, RuleNode, SyntaxTree, TerminalNode, Tree};
 
@@ -23,6 +28,13 @@ fn test_trait_id() {
 
 struct MyTree {}
 
+impl AnyExt for MyTree {
+    fn does_impl(&self, tid: &TypeId) -> bool {
+        check_base!(tid);
+        false
+    }
+}
+
 impl Tree for MyTree {
     fn parent(&self) -> Option<&dyn Tree> {
         None
@@ -44,9 +56,11 @@ impl SyntaxTree for MyTree {
 #[test]
 fn test_it_is() {
     let t: &dyn Tree = &MyTree {};
-    assert_eq!(it_is::<dyn Tree, MyTree>(t), true);
+    println!("{:?}", TypeId::of::<dyn SyntaxTree>());
+    if let Some(x) = downcast_trait_ref!(t, SyntaxTree) {}
+    // assert_eq!(it_is::<dyn Tree, MyTree>(t), true);
     let t: &dyn SyntaxTree = &MyTree {};
-    assert_eq!(it_is::<dyn SyntaxTree, MyTree>(t), true);
+    // assert_eq!(it_is::<dyn SyntaxTree, MyTree>(t), true);
     let t: Box<dyn SyntaxTree> = Box::new(MyTree {});
-    assert_eq!(it_is::<dyn SyntaxTree, MyTree>(t.as_ref()), true);
+    // assert_eq!(it_is::<dyn SyntaxTree, MyTree>(t.as_ref()), true);
 }

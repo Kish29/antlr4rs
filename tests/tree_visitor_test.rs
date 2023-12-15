@@ -1,10 +1,11 @@
 #![feature(trait_upcasting)]
 #![allow(incomplete_features)]
 
-use std::any::Any;
+use std::any::{Any, TypeId};
 use std::borrow::Cow;
 use std::fmt::Debug;
-use antlr4rs::any_ext::{it_is, AnyExt};
+use antlr4rs::any_ext::AnyExt;
+use antlr4rs::{check_base, downcast_trait_ref};
 use antlr4rs::input_stream::StringStream;
 use antlr4rs::parser_rule_context::BaseParserRuleContext;
 use antlr4rs::rule_context::RuleContext;
@@ -22,6 +23,13 @@ struct MyParseTree {
 impl MyParseTree {
     pub fn accept_custom(&self, visitor: &dyn ParseTreeVisitor) -> Val {
         StrSRef("antlr4rs")
+    }
+}
+
+impl AnyExt for MyParseTree {
+    fn does_impl(&self, tid: &TypeId) -> bool {
+        check_base!(self, tid);
+        false
     }
 }
 
@@ -61,22 +69,13 @@ impl Tree for MyParseTree {
 
 impl ParseTree for MyParseTree {
     fn accept(&self, visitor: &dyn ParseTreeVisitor) -> Val {
-        // not graceful
-        /*if visitor.type_id() == TypeId::of::<MyParseTreeVisitor>() {
-            return (visitor as &dyn Any).downcast_ref::<MyParseTreeVisitor>().unwrap().visit_custom(self);
-        }*/
-        // use this
-        match (visitor as &dyn AnyExt).try_downcast_ref::<MyParseTreeVisitor>() {
-            // match any_ext::try_downcast_ref::<MyParseTreeVisitor>(visitor as &dyn AnyExt) {
-            Ok(p) => {
-                println!("MyParseTree recognized MyParseTreeVisitor");
-                p.visit_custom(self)
-            }
-            Err(e) => {
-                println!("cast to MyParseTreeVisitor failed. error: {:?}", e);
-                self.base.accept(visitor)
-            }
+        if let Some(aaa) = downcast_trait_ref!(visitor, AAAVisitor) {
+            aaa.aaa();
         }
+        if let Some(mpv) = (visitor as &dyn Any).downcast_ref::<MyParseTreeVisitor>() {
+            return self.accept_custom(mpv);
+        }
+        self.base.accept(visitor)
     }
 
     fn text(&self) -> Cow<'_, str> {
@@ -84,9 +83,29 @@ impl ParseTree for MyParseTree {
     }
 }
 
+trait AAAVisitor {
+    fn aaa(&self);
+}
+
 #[derive(Debug)]
 struct MyParseTreeVisitor {
     base: BaseParseTreeVisitor,
+}
+
+impl AnyExt for MyParseTreeVisitor {
+    fn does_impl(&self, tid: &TypeId) -> bool {
+        check_base!(self, tid);
+        if *tid == TypeId::of::<dyn AAAVisitor>() {
+            return true;
+        }
+        false
+    }
+}
+
+impl AAAVisitor for MyParseTreeVisitor {
+    fn aaa(&self) {
+        println!("aaa");
+    }
 }
 
 impl MyParseTreeVisitor {
@@ -97,12 +116,10 @@ impl MyParseTreeVisitor {
 
 impl ParseTreeVisitor for MyParseTreeVisitor {
     fn visit(&self, tree: &dyn ParseTree) -> Val {
-        if it_is::<dyn ParseTree, MyParseTree>(tree) {
-            println!("{:?}", (tree as &dyn Any).downcast_ref::<MyParseTree>().unwrap().accept_custom(self));
-            println!("visit tree type is MyParseTree, id: {:?}", tree.type_id())
+        if let Some(mpt) = (tree as &dyn Any).downcast_ref::<MyParseTree>() {
+            println!("visit tree type is MyParseTree, id: {:?}", mpt.type_id())
         }
         tree.accept(self)
-        // Str("visit".to_string())
     }
 
     fn visit_children(&self, node: &dyn RuleNode) -> Val {
@@ -126,6 +143,13 @@ impl ParseTreeVisitor for MyParseTreeVisitor {
 struct AnyAnyAny {
     name: String,
     age: usize,
+}
+
+impl AnyExt for AnyAnyAny {
+    fn does_impl(&self, tid: &TypeId) -> bool {
+        check_base!(self, tid);
+        false
+    }
 }
 
 impl AnyAnyAny {

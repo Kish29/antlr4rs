@@ -1,6 +1,9 @@
+use std::any::TypeId;
 use std::borrow::Cow;
 use std::rc::Rc;
+use crate::any_ext::AnyExt;
 use crate::atn::ATN_INVALID_ALT_NUMBER;
+use crate::check_base;
 use crate::tree::{ParseTree, ParseTreeVisitor, RuleNode, SyntaxTree, Tree};
 use crate::value::Val;
 
@@ -28,6 +31,13 @@ impl BaseRuleContext {
     // #[inline(always)]
     pub fn new(parent: Option<Rc<dyn RuleContext>>, invoking_state: isize) -> Self {
         Self { parent_ctx: parent, invoking_state }
+    }
+}
+
+impl AnyExt for BaseRuleContext {
+    fn does_impl(&self, tid: &TypeId) -> bool {
+        check_base!(self, tid);
+        false
     }
 }
 

@@ -1,5 +1,8 @@
+use std::any::TypeId;
 use std::borrow::Cow;
 use std::rc::Rc;
+use crate::any_ext::AnyExt;
+use crate::check_base;
 use crate::error_listener::ErrorListener;
 use crate::errors::ANTLRError;
 use crate::rule_context::{BaseRuleContext, RuleContext};
@@ -45,6 +48,13 @@ impl BaseParserRuleContext {
             exception: None,
             children: vec![],
         }
+    }
+}
+
+impl AnyExt for BaseParserRuleContext {
+    fn does_impl(&self, tid: &TypeId) -> bool {
+        check_base!(&self, tid);
+        false
     }
 }
 

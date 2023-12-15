@@ -1,6 +1,8 @@
+use std::any::TypeId;
 use std::borrow::Cow;
 use std::fmt::Debug;
 use crate::any_ext::AnyExt;
+use crate::check_base;
 use crate::rule_context::RuleContext;
 use crate::token::Token;
 use crate::value::Val;
@@ -72,6 +74,13 @@ pub struct BaseParseTreeVisitor;
 
 impl Default for BaseParseTreeVisitor {
     fn default() -> Self { Self {} }
+}
+
+impl AnyExt for BaseParseTreeVisitor {
+    fn does_impl(&self, tid: &TypeId) -> bool {
+        check_base!(self, tid);
+        false
+    }
 }
 
 impl ParseTreeVisitor for BaseParseTreeVisitor {
