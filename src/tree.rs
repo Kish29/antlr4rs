@@ -1,6 +1,7 @@
 use std::any::Any;
 use std::borrow::Cow;
 use std::fmt::Debug;
+use std::rc::Rc;
 use crate::rule_context::RuleContext;
 use crate::token::Token;
 use crate::value::Val;
@@ -14,14 +15,12 @@ use crate::value::Val::Nil;
 /// The basic notion of a tree has a parent, a payload, and a list of children.
 /// It is the most abstract interface for all the trees used by ANTLR.
 pub trait Tree: Any + 'static {
-    // fn tid(&self) -> usize { 0 }
-
     /// The parent of this node. a
     /// If the return value is None, then this node is the root of the tree.
-    fn parent(&self) -> Option<&dyn Tree>;
+    fn parent(&self) -> Option<Rc<dyn Tree>>;
 
     /// If there are children, get the `i`-th value indexed from 0.
-    fn child(&self, i: usize) -> Option<&dyn Tree>;
+    fn child(&self, i: usize) -> Option<Rc<dyn Tree>>;
 
     fn child_count(&self) -> usize;
 }
@@ -52,7 +51,7 @@ pub trait RuleNode: ParseTree {
 }
 
 pub trait TerminalNode: ParseTree {
-    fn symbol(&self) -> &dyn Token;
+    fn symbol(&self) -> Rc<dyn Token>;
 }
 
 pub trait ErrorNode: TerminalNode {}

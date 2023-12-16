@@ -4,6 +4,7 @@
 use std::any::Any;
 use std::borrow::Cow;
 use std::fmt::Debug;
+use std::rc::Rc;
 use antlr4rs::input_stream::StringStream;
 use antlr4rs::parser_rule_context::BaseParserRuleContext;
 use antlr4rs::rule_context::RuleContext;
@@ -27,7 +28,7 @@ impl MyParseTree {
 impl ErrorNode for MyParseTree {}
 
 impl TerminalNode for MyParseTree {
-    fn symbol(&self) -> &dyn Token { todo!() }
+    fn symbol(&self) -> Rc<dyn Token> { todo!() }
 }
 
 impl RuleNode for MyParseTree {
@@ -47,11 +48,11 @@ impl SyntaxTree for MyParseTree {
 }
 
 impl Tree for MyParseTree {
-    fn parent(&self) -> Option<&dyn Tree> {
+    fn parent(&self) -> Option<Rc<dyn Tree>> {
         self.base.parent()
     }
 
-    fn child(&self, i: usize) -> Option<&dyn Tree> {
+    fn child(&self, i: usize) -> Option<Rc<dyn Tree>> {
         self.base.child(i)
     }
 

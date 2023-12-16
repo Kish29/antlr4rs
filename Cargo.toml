@@ -16,5 +16,6 @@ criterion = "^0.5"
 
 [[bench]]
 #name = "input_stream_bench"
-name = "deserialize_atn_bench"
+#name = "deserialize_atn_bench"
+name = "murmur3_hash_bench"
 harness = false

@@ -46,6 +46,7 @@ const ATN_STATE_LOOP_END: ATNStateType = 12;
 
 #[derive(Debug)]
 pub struct BaseATNState {
+    /// nth(order/position) of this state in [crate::atn::ATN]'s states.
     state_nth: Nth,
     state_type: ATNStateType,
     pub(crate) rule_idx: usize,

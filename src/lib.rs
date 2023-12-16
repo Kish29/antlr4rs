@@ -44,6 +44,7 @@ pub mod atn_deserializer;
 pub mod atn_deserialize_option;
 pub mod interval_set;
 pub mod transition;
+pub mod misc;
 
 /// use [Nth] to present a target position
 pub type Nth = usize;

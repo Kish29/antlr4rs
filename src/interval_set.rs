@@ -1,5 +1,4 @@
 use std::cmp::{max, min};
-use crate::add;
 
 /// [Interval] represents interval equivalent to start..=stop
 #[derive(Debug, Clone, PartialEq, Eq)]
