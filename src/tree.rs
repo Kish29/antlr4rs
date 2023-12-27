@@ -2,6 +2,7 @@ use std::any::Any;
 use std::borrow::Cow;
 use std::fmt::Debug;
 use std::rc::Rc;
+use crate::parser_rule_context::ParserRuleContext;
 use crate::rule_context::RuleContext;
 use crate::token::Token;
 use crate::value::Val;
@@ -58,6 +59,16 @@ pub trait TerminalNode: ParseTree {
 
 pub trait ErrorNode: TerminalNode {}
 
+pub trait ParseTreeListener: Any + 'static {
+    fn visit_terminal(&self, _node: &dyn TerminalNode) -> Val { Nil }
+
+    fn visit_error_node(&self, _node: &dyn TerminalNode) -> Val { Nil }
+
+    fn enter_every_rule(&self, _ctx: &dyn ParserRuleContext) -> Val { Nil }
+
+    fn exit_every_rule(&self, _ctx: &dyn ParserRuleContext) -> Val { Nil }
+}
+
 pub trait ParseTreeVisitor: Any + 'static {
     fn visit(&self, tree: &dyn ParseTree) -> Val;
 
@@ -65,7 +76,7 @@ pub trait ParseTreeVisitor: Any + 'static {
 
     fn visit_terminal(&self, _node: &dyn TerminalNode) -> Val { Nil }
 
-    fn visit_err_node(&self, _node: &dyn ErrorNode) -> Val { Nil }
+    fn visit_error_node(&self, _node: &dyn ErrorNode) -> Val { Nil }
 }
 
 impl<T: Any + 'static> ParseTreeVisitor for T {
