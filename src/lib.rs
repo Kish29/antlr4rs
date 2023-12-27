@@ -45,6 +45,7 @@ pub mod atn_deserialize_option;
 pub mod interval_set;
 pub mod transition;
 pub mod misc;
+pub mod semantic_context;
 
 /// use [Nth] to present a target position
 pub type Nth = usize;

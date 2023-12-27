@@ -49,14 +49,10 @@ impl LexerAction {
                 })
             }
             LEXER_ACTION_MORE => {
-                LexerAction::More(MoreLexerAction {
-                    base: BaseLexerAction::new(LEXER_ACTION_MORE),
-                })
+                LexerAction::More(MoreLexerAction::new(LEXER_ACTION_MORE))
             }
             LEXER_ACTION_POP_MODE => {
-                LexerAction::PopMode(PopModeLexerAction {
-                    base: BaseLexerAction::new(LEXER_ACTION_POP_MODE),
-                })
+                LexerAction::PopMode(PopModeLexerAction::new(LEXER_ACTION_POP_MODE))
             }
             LEXER_ACTION_PUSH_MODE => {
                 LexerAction::PushMode(PushModeLexerAction {
@@ -65,9 +61,7 @@ impl LexerAction {
                 })
             }
             LEXER_ACTION_SKIP => {
-                LexerAction::Skip(SkipLexerAction {
-                    base: BaseLexerAction::new(LEXER_ACTION_SKIP),
-                })
+                LexerAction::Skip(SkipLexerAction::new(LEXER_ACTION_SKIP))
             }
             LEXER_ACTION_TYPE => {
                 LexerAction::Type(TypeLexerAction {
@@ -109,15 +103,9 @@ pub struct ModeLexerAction {
     pub(crate) mode: isize,
 }
 
-#[derive(Debug)]
-pub struct MoreLexerAction {
-    pub(crate) base: BaseLexerAction,
-}
+pub type MoreLexerAction = BaseLexerAction;
 
-#[derive(Debug)]
-pub struct PopModeLexerAction {
-    pub(crate) base: BaseLexerAction,
-}
+pub type PopModeLexerAction = BaseLexerAction;
 
 #[derive(Debug)]
 pub struct PushModeLexerAction {
@@ -125,10 +113,7 @@ pub struct PushModeLexerAction {
     pub(crate) mode: isize,
 }
 
-#[derive(Debug)]
-pub struct SkipLexerAction {
-    pub(crate) base: BaseLexerAction,
-}
+pub type SkipLexerAction = BaseLexerAction;
 
 #[derive(Debug)]
 pub struct TypeLexerAction {

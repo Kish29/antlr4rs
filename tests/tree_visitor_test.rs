@@ -5,22 +5,20 @@ use std::any::Any;
 use std::borrow::Cow;
 use std::fmt::Debug;
 use std::rc::Rc;
-use antlr4rs::input_stream::StringStream;
 use antlr4rs::parser_rule_context::BaseParserRuleContext;
 use antlr4rs::rule_context::RuleContext;
 use antlr4rs::token::Token;
-use antlr4rs::token_factory::{CommonTokenFactory, TokenFactory};
-use antlr4rs::tree::{BaseParseTreeVisitor, ErrorNode, ParseTree, ParseTreeVisitor, RuleNode, SyntaxTree, TerminalNode, Tree};
-use antlr4rs::value::{StructType, Val};
-use antlr4rs::value::Val::{Arr, Bool, Struct, Str, Int64, Uint64, AnyBox, StrSRef};
+use antlr4rs::tree::{ErrorNode, ParseTree, ParseTreeVisitor, RuleNode, SyntaxTree, TerminalNode, Tree};
+use antlr4rs::value::Val;
+use antlr4rs::value::Val::{Nil, StrSRef};
 
 struct MyParseTree {
     base: BaseParserRuleContext,
     text: String,
 }
 
-impl MyParseTree {
-    pub fn accept_custom(&self, visitor: &dyn ParseTreeVisitor) -> Val {
+/*impl MyParseTree {
+    pub fn accept_custom(&self, _visitor: &dyn ParseTreeVisitor) -> Val {
         StrSRef("antlr4rs")
     }
 }
@@ -35,17 +33,7 @@ impl RuleNode for MyParseTree {
     fn rule_context(&self) -> &dyn RuleContext {
         todo!()
     }
-}
-
-impl SyntaxTree for MyParseTree {
-    fn source_start(&self) -> isize {
-        0
-    }
-
-    fn source_end(&self) -> isize {
-        0
-    }
-}
+}*/
 
 impl Tree for MyParseTree {
     fn parent(&self) -> Option<Rc<dyn Tree>> {
@@ -59,11 +47,18 @@ impl Tree for MyParseTree {
     fn child_count(&self) -> usize { self.base.child_count() }
 }
 
+
+impl SyntaxTree for MyParseTree {
+    fn source_start(&self) -> isize { 0 }
+
+    fn source_end(&self) -> isize { 0 }
+}
+
 impl ParseTree for MyParseTree {
     fn accept(&self, visitor: &dyn ParseTreeVisitor) -> Val {
-        if let Some(mptv) = (visitor as &dyn Any).downcast_ref::<MyParseTreeVisitor>() {
-            println!("MyParseTree recognized MyParseTreeVisitor");
-            return mptv.visit_custom(self);
+        if let Some(mptv) = (visitor as &dyn Any).downcast_ref::<MyParseTreeVisitorProxy>() {
+            println!("MyParseTree recognized MyParseTreeVisitorProxy");
+            return mptv.visit_my_node(self);
         }
         self.base.accept(visitor)
     }
@@ -73,40 +68,21 @@ impl ParseTree for MyParseTree {
     }
 }
 
-#[derive(Debug)]
-struct MyParseTreeVisitor {
-    base: BaseParseTreeVisitor,
+trait MyParseTreeVisitor {
+    fn visit_my_node(&self, _my_node: &MyParseTree) -> Val { Nil }
 }
 
-impl MyParseTreeVisitor {
-    pub fn visit_custom(&self, _tree: &dyn ParseTree) -> Val {
-        Str("visit_custom".to_string())
-    }
+struct MyParseTreeVisitorProxy {
+    inner: Box<dyn MyParseTreeVisitor>,
 }
 
-impl ParseTreeVisitor for MyParseTreeVisitor {
-    fn visit(&self, tree: &dyn ParseTree) -> Val {
-        if let Some(mp) = (tree as &dyn Any).downcast_ref::<MyParseTree>() {
-            println!("visit tree type is MyParseTree, id: {:?}", tree.type_id());
-            return mp.accept_custom(self);
-        }
-        tree.accept(self)
+impl MyParseTreeVisitorProxy {
+    pub fn new<T: MyParseTreeVisitor + 'static>(v: T) -> Self {
+        Self { inner: Box::new(v) }
     }
 
-    fn visit_children(&self, node: &dyn RuleNode) -> Val {
-        Arr(vec![Str("1".to_string()), Bool(true), Int64(128)])
-    }
-
-    fn visit_terminal(&self, node: &dyn TerminalNode) -> Val {
-        let mut obj = StructType::new();
-        obj.insert("name".to_string(), Str("Jack".to_string()));
-        obj.insert("age".to_string(), Uint64(24));
-        obj.insert("any type".to_string(), AnyBox(Box::new(AnyAnyAny::new(String::from("Kish29"), 24))));
-        Struct(obj)
-    }
-
-    fn visit_err_node(&self, node: &dyn ErrorNode) -> Val {
-        Uint64(128)
+    pub fn visit_my_node(&self, my_node: &MyParseTree) -> Val {
+        self.inner.visit_my_node(my_node)
     }
 }
 
@@ -122,20 +98,18 @@ impl AnyAnyAny {
     }
 }
 
+struct IamVisitor {}
+
+impl MyParseTreeVisitor for IamVisitor {
+    fn visit_my_node(&self, my_node: &MyParseTree) -> Val {
+        println!("{}", &my_node.text);
+        StrSRef("I am visitor implement generated trait.")
+    }
+}
+
 #[test]
 fn test_tree_visitor() {
-    let mpt = MyParseTree { base: BaseParserRuleContext::new(None, -1), text: "my parse tree visitor. :)".to_string() };
-    let mptv = MyParseTreeVisitor { base: Default::default() };
-    println!("{:?}", mpt.accept(&mptv));
-    println!("{:?}", mptv.visit(&mpt));
-    println!("{:?}", mptv.visit_children(&mpt));
-    println!("{:?}", mptv.visit_terminal(&mpt));
-    println!("{:?}", mptv.visit_err_node(&mpt));
-    println!("{:?}", mpt.text());
-
-    let mut input = StringStream::from("input stream in test");
-
-    let tf: CommonTokenFactory = CommonTokenFactory::new();
-    let tk = tf.create(&mut input, 1, None, 1, 0, 4, 0, 0);
-    println!("{:?}", tk.text());
+    let mpt: &dyn ParseTree = &MyParseTree { base: BaseParserRuleContext::new(None, -1), text: "my parse tree visitor. :)".to_string() };
+    let mptva: &dyn ParseTreeVisitor = &MyParseTreeVisitorProxy::new(IamVisitor {});
+    println!("{:?}", mptva.visit(mpt));
 }

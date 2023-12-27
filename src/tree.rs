@@ -8,8 +8,10 @@ use crate::value::Val;
 use crate::value::Val::Nil;
 
 // here defines all type that will use in parser progress
-// have no choice to use dynamic type instead of use template cause using template is too complex to design.
-// this may cause some performance decrease, or somebody can help me to implement this? :)
+// have no choice to use dynamic type instead of using template,
+// cause using template is too complex to design.
+// this may cause some performance decrease :(
+// i'd appreciate it if somebody can help me to implement this by using template :)
 
 
 /// The basic notion of a tree has a parent, a payload, and a list of children.
@@ -59,27 +61,15 @@ pub trait ErrorNode: TerminalNode {}
 pub trait ParseTreeVisitor: Any + 'static {
     fn visit(&self, tree: &dyn ParseTree) -> Val;
 
-    fn visit_children(&self, node: &dyn RuleNode) -> Val;
-
-    fn visit_terminal(&self, node: &dyn TerminalNode) -> Val;
-
-    fn visit_err_node(&self, node: &dyn ErrorNode) -> Val;
-}
-
-#[derive(Debug)]
-pub struct BaseParseTreeVisitor;
-
-impl Default for BaseParseTreeVisitor {
-    fn default() -> Self { Self {} }
-}
-
-impl ParseTreeVisitor for BaseParseTreeVisitor {
-    // #[inline(always)]
-    fn visit(&self, tree: &dyn ParseTree) -> Val { tree.accept(self) }
-
     fn visit_children(&self, _node: &dyn RuleNode) -> Val { Nil }
 
     fn visit_terminal(&self, _node: &dyn TerminalNode) -> Val { Nil }
 
     fn visit_err_node(&self, _node: &dyn ErrorNode) -> Val { Nil }
+}
+
+impl<T: Any + 'static> ParseTreeVisitor for T {
+    fn visit(&self, tree: &dyn ParseTree) -> Val {
+        tree.accept(self)
+    }
 }
