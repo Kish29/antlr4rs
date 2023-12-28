@@ -1,11 +1,8 @@
-use std::collections::HashMap;
-use std::sync::Arc;
-use crate::atn::{ATN, ATN_INVALID_ALT_NUMBER};
+use crate::atn::ATN;
 use crate::atn_config_set::ATNConfigSet;
 use crate::atn_state::ATNState;
 use crate::dfa_state::DFAState;
 use crate::misc::jcollect::JStore;
-use crate::misc::murmur3::MurmurHash;
 use crate::Nth;
 
 #[derive(Debug)]

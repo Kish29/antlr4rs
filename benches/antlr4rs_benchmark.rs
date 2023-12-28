@@ -1,5 +1,63 @@
 use criterion::{black_box, Criterion, criterion_group, criterion_main};
 use antlr4rs::atn_deserializer::ATNDeserializer;
+use antlr4rs::char_stream::{CharStream};
+use antlr4rs::input_stream::{CodePoint32BitStream, StringStream};
+use antlr4rs::misc::murmur3::{murmur_finish, murmur_init, murmur_update};
+
+fn str_input_stream() {
+    let mut input = StringStream::from(r#"A你4好§，\❤"#);
+    let input = &mut input as &mut dyn CharStream;
+    assert_eq!(input.size(), 8);
+    input.consume();
+    input.consume();
+    input.consume();
+    input.consume();
+    input.consume();
+    input.consume();
+
+    assert_eq!(input.text(1, 1), "你");
+    assert_eq!(input.text(1, 2), "你4");
+    assert_eq!(input.text(3, 5), "好§，");
+    assert_eq!(input.text(0, 5), "A你4好§，");
+    assert_eq!(input.text(3, 10), "好§，\\❤");
+    assert_eq!(input.text(0, 8), r#"A你4好§，\❤"#);
+}
+
+fn code_point32_input_stream() {
+    let mut input = CodePoint32BitStream::new(vec![0x00a3, 0x00a4, 0x00a5, 0x00a6, 0x00a7]);
+    let v = &mut input as &mut dyn CharStream;
+    v.consume();
+    v.consume();
+    v.consume();
+    v.consume();
+    v.consume();
+
+    assert_eq!(v.text(1, 1), "¤");
+    assert_eq!(v.text(1, 2), "¤¥");
+    assert_eq!(v.text(3, 5), "¦§");
+    assert_eq!(v.text(0, 5), "£¤¥¦§");
+}
+
+fn code_point32_input_stream_into_owned() {
+    let mut input = CodePoint32BitStream::new(vec![0x00a3, 0x00a4, 0x00a5, 0x00a6, 0x00a7]);
+    let v = &mut input as &mut dyn CharStream;
+    v.consume();
+    v.consume();
+    v.consume();
+    v.consume();
+    v.consume();
+
+    assert_eq!(v.text(1, 1).into_owned(), "¤");
+    assert_eq!(v.text(1, 2).into_owned(), "¤¥");
+    assert_eq!(v.text(3, 5).into_owned(), "¦§");
+    assert_eq!(v.text(0, 5).into_owned(), "£¤¥¦§");
+}
+
+fn bench_group_input_stream(c: &mut Criterion) {
+    c.bench_function("create/access string input stream.", |b| b.iter(|| str_input_stream()));
+    c.bench_function("create/access code_point32 input stream.", |b| b.iter(|| code_point32_input_stream()));
+    c.bench_function("create/access code_point32 input stream with into_owned invoke.", |b| b.iter(|| code_point32_input_stream_into_owned()));
+}
 
 const SERIALIZED_ATN: &'static [i32] = &[
     4, 0, 88, 899, 6, -1, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 2, 3, 7, 3, 2,
@@ -387,11 +445,73 @@ const SERIALIZED_ATN: &'static [i32] = &[
     1, 0, 0, 0, 6, 0, 815, 841, 845, 853, 895, 1, 6, 0, 0,
 ];
 
-fn bench_deserialize_atn(c: &mut Criterion) {
+fn bench_group_deserialize_atn(c: &mut Criterion) {
     c.bench_function("deserialize atn[arishem].", |b| b.iter(|| black_box({
         ATNDeserializer::new(None).deserialize(SERIALIZED_ATN)
     })));
 }
 
-criterion_group!(benches, bench_deserialize_atn);
+
+struct ShouldHash {
+    vecs: Vec<UseMurmur>,
+}
+
+impl ShouldHash {
+    fn hash_code(&self) -> u32 {
+        let mut h: u32 = 1;
+        for ue in &self.vecs {
+            h = h.wrapping_mul(31).wrapping_add(ue.hash_code());
+        }
+        h
+    }
+}
+
+struct UseMurmur {
+    s1: u32,
+    s2: u32,
+    c: u32,
+    d: u32,
+}
+
+impl UseMurmur {
+    pub fn hash_code(&self) -> u32 {
+        let mut h = murmur_init(7);
+        h = murmur_update(h, self.s1);
+        h = murmur_update(h, self.s2);
+        h = murmur_update(h, self.c);
+        h = murmur_update(h, self.d);
+        murmur_finish(h, 4)
+    }
+}
+
+#[test]
+fn test_hasher() {
+    let mut sh = ShouldHash { vecs: vec![] };
+    sh.vecs.push(UseMurmur { s1: 1, s2: 2, c: 3, d: 4 });
+    sh.vecs.push(UseMurmur { s1: 1, s2: 2, c: 3, d: 4 });
+    sh.vecs.push(UseMurmur { s1: 1, s2: 2, c: 3, d: 4 });
+    sh.vecs.push(UseMurmur { s1: 1, s2: 2, c: 3, d: 4 });
+    sh.vecs.push(UseMurmur { s1: 1, s2: 2, c: 3, d: 4 });
+    sh.vecs.push(UseMurmur { s1: 1, s2: 2, c: 3, d: 4 });
+    println!("{}", sh.hash_code());
+}
+
+fn gen_hash() {
+    let mut sh = ShouldHash { vecs: vec![] };
+    sh.vecs.push(UseMurmur { s1: 1, s2: 2, c: 3, d: 4 });
+    sh.vecs.push(UseMurmur { s1: 1, s2: 2, c: 3, d: 4 });
+    sh.vecs.push(UseMurmur { s1: 1, s2: 2, c: 3, d: 4 });
+    sh.vecs.push(UseMurmur { s1: 1, s2: 2, c: 3, d: 4 });
+    sh.vecs.push(UseMurmur { s1: 1, s2: 2, c: 3, d: 4 });
+    sh.vecs.push(UseMurmur { s1: 1, s2: 2, c: 3, d: 4 });
+    // println!("{}", sh.hash_code());
+}
+
+fn bench_group_murmur3_hash(c: &mut Criterion) {
+    c.bench_function("murmur3 hash", |b| b.iter(|| {
+        black_box(gen_hash())
+    }));
+}
+
+criterion_group!(benches, bench_group_input_stream, bench_group_deserialize_atn, bench_group_murmur3_hash);
 criterion_main!(benches);

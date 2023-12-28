@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
 use crate::Nth;
+use std::sync::{Arc, RwLock};
 
 #[derive(Debug)]
 pub enum PredictionContext {

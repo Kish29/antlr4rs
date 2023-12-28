@@ -6,16 +6,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-lazy_static = "*"
-# todo remove this dependency, just for diff debuging
-serde = "1.0.107"
-serde_json = "1.0.107"
 
 [dev-dependencies]
-criterion = "^0.5"
+criterion = "*"
+lazy_static = "*"
 
 [[bench]]
-#name = "input_stream_bench"
-#name = "deserialize_atn_bench"
-name = "murmur3_hash_bench"
+name = "antlr4rs_benchmark"
 harness = false

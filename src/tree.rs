@@ -60,13 +60,13 @@ pub trait TerminalNode: ParseTree {
 pub trait ErrorNode: TerminalNode {}
 
 pub trait ParseTreeListener: Any + 'static {
-    fn visit_terminal(&self, _node: &dyn TerminalNode) -> Val { Nil }
+    fn visit_terminal(&self, _node: &dyn TerminalNode);
 
-    fn visit_error_node(&self, _node: &dyn TerminalNode) -> Val { Nil }
+    fn visit_error_node(&self, _node: &dyn TerminalNode);
 
-    fn enter_every_rule(&self, _ctx: &dyn ParserRuleContext) -> Val { Nil }
+    fn enter_every_rule(&self, _ctx: &dyn ParserRuleContext);
 
-    fn exit_every_rule(&self, _ctx: &dyn ParserRuleContext) -> Val { Nil }
+    fn exit_every_rule(&self, _ctx: &dyn ParserRuleContext);
 }
 
 pub trait ParseTreeVisitor: Any + 'static {
