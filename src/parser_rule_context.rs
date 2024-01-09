@@ -48,10 +48,6 @@ impl BaseParserRuleContext {
     }
 }
 
-impl RuleNode for BaseParserRuleContext {
-    // #[inline]
-    fn rule_context(&self) -> &dyn RuleContext { self }
-}
 
 impl ParseTree for BaseParserRuleContext {
     // #[inline(always)]

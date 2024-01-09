@@ -5,7 +5,8 @@ use std::any::Any;
 use std::borrow::Cow;
 use std::rc::Rc;
 use antlr4rs::parser_rule_context::BaseParserRuleContext;
-use antlr4rs::tree::{ParseTree, ParseTreeVisitor, SyntaxTree, Tree};
+use antlr4rs::rule_context::RuleContext;
+use antlr4rs::tree::{ParseTree, ParseTreeVisitor, RuleNode, SyntaxTree, Tree};
 use antlr4rs::value::Val;
 use antlr4rs::value::Val::{Nil, StrSRef};
 
@@ -53,15 +54,40 @@ impl SyntaxTree for MyParseTree {
 
 impl ParseTree for MyParseTree {
     fn accept(&self, visitor: &dyn ParseTreeVisitor) -> Val {
-        if let Some(mptv) = (visitor as &dyn Any).downcast_ref::<MyParseTreeVisitorProxy>() {
-            println!("MyParseTree recognized MyParseTreeVisitorProxy");
-            return mptv.visit_my_node(self);
+        match (visitor as &dyn Any).downcast_ref::<MyParseTreeVisitorProxy>() {
+            Some(t) => t.visit_my_node(self),
+            None => visitor.visit_children(self)
         }
-        self.base.accept(visitor)
     }
 
     fn text(&self) -> Cow<'_, str> {
         Cow::Borrowed(self.text.as_str())
+    }
+}
+
+impl RuleContext for MyParseTree {
+    fn invoking_state(&self) -> isize {
+        todo!()
+    }
+
+    fn set_invoking_state(&mut self, s: isize) {
+        todo!()
+    }
+
+    fn rule_index(&self) -> isize {
+        todo!()
+    }
+
+    fn is_empty(&self) -> bool {
+        todo!()
+    }
+
+    fn alt_number(&self) -> isize {
+        todo!()
+    }
+
+    fn set_alt_number(&mut self, alt_num: isize) {
+        todo!()
     }
 }
 

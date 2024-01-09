@@ -32,11 +32,6 @@ impl BaseRuleContext {
     }
 }
 
-impl RuleNode for BaseRuleContext {
-    // #[inline]
-    fn rule_context(&self) -> &dyn RuleContext { self }
-}
-
 impl ParseTree for BaseRuleContext {
     // #[inline(always)]
     fn accept(&self, visitor: &dyn ParseTreeVisitor) -> Val {

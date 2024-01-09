@@ -53,20 +53,26 @@ pub trait RuleNode: ParseTree {
     fn rule_context(&self) -> &dyn RuleContext;
 }
 
+impl<T: RuleContext + Sized + 'static> RuleNode for T {
+    fn rule_context(&self) -> &dyn RuleContext { self }
+}
+
 pub trait TerminalNode: ParseTree {
     fn symbol(&self) -> Rc<dyn Token>;
 }
 
 pub trait ErrorNode: TerminalNode {}
 
+impl<T: TerminalNode + Sized + 'static> ErrorNode for T {}
+
 pub trait ParseTreeListener: Any + 'static {
-    fn visit_terminal(&self, _node: &dyn TerminalNode);
+    fn visit_terminal(&self, _node: &dyn TerminalNode) {}
 
-    fn visit_error_node(&self, _node: &dyn TerminalNode);
+    fn visit_error_node(&self, _node: &dyn TerminalNode) {}
 
-    fn enter_every_rule(&self, _ctx: &dyn ParserRuleContext);
+    fn enter_every_rule(&self, _ctx: &dyn ParserRuleContext) {}
 
-    fn exit_every_rule(&self, _ctx: &dyn ParserRuleContext);
+    fn exit_every_rule(&self, _ctx: &dyn ParserRuleContext) {}
 }
 
 pub trait ParseTreeVisitor: Any + 'static {
@@ -79,7 +85,8 @@ pub trait ParseTreeVisitor: Any + 'static {
     fn visit_error_node(&self, _node: &dyn ErrorNode) -> Val { Nil }
 }
 
-impl<T: Any + 'static> ParseTreeVisitor for T {
+/// do not allow user to implement visit
+impl<T: Sized + Any + 'static> ParseTreeVisitor for T {
     fn visit(&self, tree: &dyn ParseTree) -> Val {
         tree.accept(self)
     }
