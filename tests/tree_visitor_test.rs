@@ -1,5 +1,5 @@
-// #![feature(trait_upcasting)]
-// #![allow(incomplete_features)]
+#![feature(trait_upcasting)]
+#![allow(incomplete_features)]
 
 use std::any::Any;
 use std::borrow::Cow;

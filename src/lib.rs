@@ -4,8 +4,9 @@
 // and I look forward to the day when this project finished and I can remove this annotation without concern.
 // See issue: https://github.com/rust-lang/rust/issues/65991
 // removed at 2023-12-28
-// #![feature(trait_upcasting)]
-// #![allow(incomplete_features)]
+// unfortunately, trait upcasting is still unsound and stabilization was reverted
+#![feature(trait_upcasting)]
+#![allow(incomplete_features)]
 
 // todo: look closely at all function annotated by #[inline], consider using it properly.
 
