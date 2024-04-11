@@ -29,15 +29,15 @@ pub enum Val {
     Float32(f32),
     Float64(f64),
     Str(String),
-    StrRef(Rc<str>),
-    StrARef(Arc<str>),
-    StrSRef(&'static str),
+    RcStr(Rc<str>),
+    ArcStr(Arc<str>),
+    StaticStr(&'static str),
     Arr(Vec<Val>),
     Struct(StructType),
-    AnyBox(Box<dyn Any>),
-    AnyRc(Rc<dyn Any>),
-    AnyArc(Arc<dyn Any>),
-    AnySRef(&'static dyn Any),
+    BoxAny(Box<dyn Any>),
+    RcAny(Rc<dyn Any>),
+    ArcAny(Arc<dyn Any>),
+    StaticAny(&'static dyn Any),
 }
 
 impl Val {

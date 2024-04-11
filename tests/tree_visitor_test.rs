@@ -8,7 +8,7 @@ use antlr4rs::parser_rule_context::BaseParserRuleContext;
 use antlr4rs::rule_context::RuleContext;
 use antlr4rs::tree::{ParseTree, ParseTreeVisitor, RuleNode, SyntaxTree, Tree};
 use antlr4rs::value::Val;
-use antlr4rs::value::Val::{Nil, StrSRef};
+use antlr4rs::value::Val::{Bool, Nil, StaticStr};
 
 struct MyParseTree {
     base: BaseParserRuleContext,
@@ -126,7 +126,7 @@ struct IamVisitor {}
 impl MyParseTreeVisitor for IamVisitor {
     fn visit_my_node(&self, my_node: &MyParseTree) -> Val {
         println!("{}", &my_node.text);
-        StrSRef("I am visitor implement generated trait.")
+        StaticStr("I am visitor implement generated trait.")
     }
 }
 
