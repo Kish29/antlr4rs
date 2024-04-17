@@ -1,27 +1,29 @@
+use std::any::Any;
 use std::borrow::Cow;
 use std::fmt::Debug;
-use crate::any_ext::AnyExt;
+use std::rc::Rc;
+use crate::parser_rule_context::ParserRuleContext;
 use crate::rule_context::RuleContext;
 use crate::token::Token;
 use crate::value::Val;
 use crate::value::Val::Nil;
 
 // here defines all type that will use in parser progress
-// have no choice to use dynamic type instead of use template cause using template is too complex to design.
-// this may cause some performance decrease, or somebody can help me to implement this? :)
+// have no choice to use dynamic type instead of using template,
+// cause using template is too complex to design.
+// this may cause some performance decrease :(
+// i'd appreciate it if somebody can help me to implement this by using template :)
 
 
 /// The basic notion of a tree has a parent, a payload, and a list of children.
 /// It is the most abstract interface for all the trees used by ANTLR.
-pub trait Tree: AnyExt {
-    // fn tid(&self) -> usize { 0 }
-
+pub trait Tree: Any + 'static {
     /// The parent of this node. a
     /// If the return value is None, then this node is the root of the tree.
-    fn parent(&self) -> Option<&dyn Tree>;
+    fn parent(&self) -> Option<Rc<dyn Tree>>;
 
     /// If there are children, get the `i`-th value indexed from 0.
-    fn child(&self, i: usize) -> Option<&dyn Tree>;
+    fn child(&self, i: usize) -> Option<Rc<dyn Tree>>;
 
     fn child_count(&self) -> usize;
 }
@@ -51,36 +53,41 @@ pub trait RuleNode: ParseTree {
     fn rule_context(&self) -> &dyn RuleContext;
 }
 
+impl<T: RuleContext + Sized + 'static> RuleNode for T {
+    fn rule_context(&self) -> &dyn RuleContext { self }
+}
+
 pub trait TerminalNode: ParseTree {
-    fn symbol(&self) -> &dyn Token;
+    fn symbol(&self) -> Rc<dyn Token>;
 }
 
 pub trait ErrorNode: TerminalNode {}
 
-pub trait ParseTreeVisitor: AnyExt {
+impl<T: TerminalNode + Sized + 'static> ErrorNode for T {}
+
+pub trait ParseTreeListener: Any + 'static {
+    fn visit_terminal(&self, _node: &dyn TerminalNode) {}
+
+    fn visit_error_node(&self, _node: &dyn TerminalNode) {}
+
+    fn enter_every_rule(&self, _ctx: &dyn ParserRuleContext) {}
+
+    fn exit_every_rule(&self, _ctx: &dyn ParserRuleContext) {}
+}
+
+pub trait ParseTreeVisitor: Any + 'static {
     fn visit(&self, tree: &dyn ParseTree) -> Val;
-
-    fn visit_children(&self, node: &dyn RuleNode) -> Val;
-
-    fn visit_terminal(&self, node: &dyn TerminalNode) -> Val;
-
-    fn visit_err_node(&self, node: &dyn ErrorNode) -> Val;
-}
-
-#[derive(Debug)]
-pub struct BaseParseTreeVisitor;
-
-impl Default for BaseParseTreeVisitor {
-    fn default() -> Self { Self {} }
-}
-
-impl ParseTreeVisitor for BaseParseTreeVisitor {
-    // #[inline(always)]
-    fn visit(&self, tree: &dyn ParseTree) -> Val { tree.accept(self) }
 
     fn visit_children(&self, _node: &dyn RuleNode) -> Val { Nil }
 
     fn visit_terminal(&self, _node: &dyn TerminalNode) -> Val { Nil }
 
-    fn visit_err_node(&self, _node: &dyn ErrorNode) -> Val { Nil }
+    fn visit_error_node(&self, _node: &dyn ErrorNode) -> Val { Nil }
+}
+
+/// do not allow user to implement visit
+impl<T: Sized + Any + 'static> ParseTreeVisitor for T {
+    fn visit(&self, tree: &dyn ParseTree) -> Val {
+        tree.accept(self)
+    }
 }

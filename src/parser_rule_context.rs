@@ -48,10 +48,6 @@ impl BaseParserRuleContext {
     }
 }
 
-impl RuleNode for BaseParserRuleContext {
-    // #[inline]
-    fn rule_context(&self) -> &dyn RuleContext { self }
-}
 
 impl ParseTree for BaseParserRuleContext {
     // #[inline(always)]
@@ -91,17 +87,17 @@ impl SyntaxTree for BaseParserRuleContext {
 }
 
 impl Tree for BaseParserRuleContext {
-    fn parent(&self) -> Option<&dyn Tree> {
+    fn parent(&self) -> Option<Rc<dyn Tree>> {
         self.base.parent()
     }
 
     // #[inline]
-    fn child(&self, i: usize) -> Option<&dyn Tree> {
+    fn child(&self, i: usize) -> Option<Rc<dyn Tree>> {
         let cc = self.child_count();
         if cc == 0 || i >= cc {
             return None;
         }
-        Some(self.children[i].as_ref() as &dyn Tree)
+        Some(Rc::clone(&self.children[i]) as Rc<dyn Tree>)
     }
 
     // #[inline]

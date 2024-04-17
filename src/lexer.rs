@@ -187,7 +187,7 @@ impl<R, LAS, TF, CS> Recognizer for BaseLexer<R, LAS, TF, CS>
         todo!()
     }
 
-    fn add_error_listener(&mut self, l: Rc<RefCell<dyn ErrorListener>>) {
+    fn add_error_listener(&mut self, l: Box<dyn ErrorListener>) {
         self.recognizer.add_error_listener(l)
     }
 

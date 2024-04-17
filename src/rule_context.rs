@@ -1,5 +1,6 @@
 use std::borrow::Cow;
-use std::rc::Rc;
+use std::ops::Deref;
+use std::rc::{Rc, Weak};
 use crate::atn::ATN_INVALID_ALT_NUMBER;
 use crate::tree::{ParseTree, ParseTreeVisitor, RuleNode, SyntaxTree, Tree};
 use crate::value::Val;
@@ -19,7 +20,7 @@ pub trait RuleContext: RuleNode {
 }
 
 pub struct BaseRuleContext {
-    pub(crate) parent_ctx: Option<Rc<dyn RuleContext>>,
+    pub(crate) parent_ctx: Option<Weak<dyn RuleContext>>,
     pub(crate) invoking_state: isize,
     // pub(crate) rule_index: isize,
 }
@@ -27,13 +28,8 @@ pub struct BaseRuleContext {
 impl BaseRuleContext {
     // #[inline(always)]
     pub fn new(parent: Option<Rc<dyn RuleContext>>, invoking_state: isize) -> Self {
-        Self { parent_ctx: parent, invoking_state }
+        Self { parent_ctx: parent.as_ref().map(Rc::downgrade), invoking_state }
     }
-}
-
-impl RuleNode for BaseRuleContext {
-    // #[inline]
-    fn rule_context(&self) -> &dyn RuleContext { self }
 }
 
 impl ParseTree for BaseRuleContext {
@@ -56,17 +52,17 @@ impl SyntaxTree for BaseRuleContext {
 
 impl Tree for BaseRuleContext {
     // #[inline]
-    fn parent(&self) -> Option<&dyn Tree> {
-        match self.parent_ctx.as_ref() {
+    fn parent(&self) -> Option<Rc<dyn Tree>> {
+        match &self.parent_ctx {
             None => None,
             Some(p) => {
-                Some(p.as_ref() as &dyn Tree)
+                p.upgrade().map(|ctx| ctx as Rc<dyn Tree>)
             }
         }
     }
 
     // #[inline]
-    fn child(&self, _i: usize) -> Option<&dyn Tree> { None }
+    fn child(&self, _i: usize) -> Option<Rc<dyn Tree>> { None }
 
     // #[inline]
     fn child_count(&self) -> usize { 0 }

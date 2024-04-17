@@ -1,21 +1,27 @@
 use std::collections::HashMap;
-use std::sync::RwLock;
+use crate::Nth;
+use std::sync::{Arc, RwLock};
 
 #[derive(Debug)]
 pub enum PredictionContext {
-    Empty(EmptyPredictionContext),
+    Empty,
     Singleton(SingletonPredictionContext),
     Array(ArrayPredictionContext),
 }
 
 #[derive(Debug)]
-pub struct EmptyPredictionContext {}
+pub struct SingletonPredictionContext {
+    cached_hash: u32,
+    ret_state_nth: Nth,
+    parent_ctx: Arc<PredictionContext>,
+}
 
 #[derive(Debug)]
-pub struct SingletonPredictionContext {}
-
-#[derive(Debug)]
-pub struct ArrayPredictionContext {}
+pub struct ArrayPredictionContext {
+    cached_hash: u32,
+    ret_states_nths: Vec<Nth>,
+    parents: Vec<Arc<PredictionContext>>,
+}
 
 #[derive(Debug)]
 pub struct PredictionContextCache {

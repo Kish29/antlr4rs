@@ -1,6 +1,61 @@
-use antlr4rs::atn_deserializer::ATNDeserializer;
+use lazy_static::lazy_static;
 
-const SERIALIZED_ATN: &'static [i32] = &[
+use std::sync::{Arc, RwLock};
+use antlr4rs::atn::ATN;
+use antlr4rs::atn_deserializer::ATNDeserializer;
+use antlr4rs::dfa::DFA;
+use antlr4rs::error_listener::ErrorListener;
+use antlr4rs::input_stream::StringStream;
+use antlr4rs::lexer::{BaseLexer, Lexer};
+use antlr4rs::lexer_atn_simulator::BaseLexerATNSimulator;
+use antlr4rs::prediction_context::PredictionContextCache;
+use antlr4rs::recognizer::{BaseRecognizer, Recognizer};
+use antlr4rs::token_factory::CommonTokenFactory;
+
+const CHANNEL_NAMES: &'static [&'static str] = &["DEFAULT_TOKEN_CHANNEL", "HIDDEN"];
+const MODE_NAMES: &'static [&'static str] = &["DEFAULT_MODE"];
+
+const LITERAL_NAMES: &'static [&'static str] = &[
+    "", "'Conditions'", "'ConditionGroups'", "'ListExpr'", "'MapExpr'",
+    "'MathExpr'", "'FuncExpr'", "'VarExpr'", "'FeatureExpr'", "'FeaturePath'",
+    "'Const'", "'ConstList'", "'ParamMap'", "'ParamList'", "'BuiltinParam'",
+    "'ActionName'", "'OpLogic'", "'OpMath'", "'FuncName'", "'Operator'",
+    "'NOT '", "'Lhs'", "'Rhs'", "'true'", "'false'", "'\\'", "' '", "'#'",
+    "'$'", "'&'", "'''", "'('", "')'", "'|'", "';'", "'='", "'?'", "'@'",
+    "'^'", "'_'", "'`'", "'~'", "'StrConst'", "'NumConst'", "'BoolConst'",
+    "'IS_NULL'", "'STRING_START_WITH'", "'STRING_END_WITH'", "'STRING_CONTAINS'",
+    "'LIST_IN'", "'LIST_CONTAINS'", "'LIST_RETAIN'", "'CONTAIN_REGULAR'",
+    "'SUB_LIST_IN'", "'SUB_LIST_CONTAINS'", "'CONTAINS_KEYWORDS'", "'BETWEEN_ALL_CLOSE'",
+    "'BETWEEN_ALL_OPEN'", "'BETWEEN_LEFT_OPEN_RIGHT_CLOSE'", "'BETWEEN_LEFT_CLOSE_RIGHT_OPEN'",
+    "", "'null'", "'.'", "','", "':'", "'\"'", "'['", "']'", "'{'", "'}'",
+    "", "", "", "", "'&&'", "'||'", "'!'", "'+'", "'-'", "'/'", "'*'", "'%'",
+    "'=='", "'!='", "'>'", "'<'", "'>='", "'<='"];
+const SYMBOLIC_NAMES: &'static [&'static str] = &[
+    "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "OPERATOR_LOGIC_STR", "NULL", "DOT",
+    "COMMA", "COLON", "QUOTATION", "L_BRACKET", "R_BRACKET", "L_BRACE",
+    "R_BRACE", "INT", "EXP", "NAME_KEY_TYPE", "SP_UNICODE", "AND", "OR",
+    "NOT", "PLUS", "SUB", "DIV", "MUL", "MOD", "EQUALS", "NOT_EQUALS", "GT",
+    "LT", "GTE", "LTE", "WS"];
+
+const RULE_NAMES: &'static [&'static str] = &[
+    "T__0", "T__1", "T__2", "T__3", "T__4", "T__5", "T__6", "T__7", "T__8",
+    "T__9", "T__10", "T__11", "T__12", "T__13", "T__14", "T__15", "T__16",
+    "T__17", "T__18", "T__19", "T__20", "T__21", "T__22", "T__23", "T__24",
+    "T__25", "T__26", "T__27", "T__28", "T__29", "T__30", "T__31", "T__32",
+    "T__33", "T__34", "T__35", "T__36", "T__37", "T__38", "T__39", "T__40",
+    "T__41", "T__42", "T__43", "T__44", "T__45", "T__46", "T__47", "T__48",
+    "T__49", "T__50", "T__51", "T__52", "T__53", "T__54", "T__55", "T__56",
+    "T__57", "T__58", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
+    "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X",
+    "Y", "Z", "OPERATOR_LOGIC_STR", "NULL", "DOT", "COMMA", "COLON", "QUOTATION",
+    "L_BRACKET", "R_BRACKET", "L_BRACE", "R_BRACE", "INT", "EXP", "NAME_KEY_TYPE",
+    "SP_UNICODE", "AND", "OR", "NOT", "PLUS", "SUB", "DIV", "MUL", "MOD",
+    "EQUALS", "NOT_EQUALS", "GT", "LT", "GTE", "LTE", "WS"];
+
+pub const SERIALIZED_ATN: &'static [i32] = &[
     4, 0, 88, 899, 6, -1, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 2, 3, 7, 3, 2,
     4, 7, 4, 2, 5, 7, 5, 2, 6, 7, 6, 2, 7, 7, 7, 2, 8, 7, 8, 2, 9, 7, 9, 2,
     10, 7, 10, 2, 11, 7, 11, 2, 12, 7, 12, 2, 13, 7, 13, 2, 14, 7, 14, 2, 15,
@@ -386,9 +441,51 @@ const SERIALIZED_ATN: &'static [i32] = &[
     1, 0, 0, 0, 6, 0, 815, 841, 845, 853, 895, 1, 6, 0, 0,
 ];
 
+lazy_static! {
+
+    static ref GLB_ATN: Arc<ATN> = Arc::new(ATNDeserializer::new(None).deserialize(SERIALIZED_ATN));
+
+    static ref GLB_DECISION_TO_DFA: Arc<Vec<RwLock<DFA>>> = {
+        let size = GLB_ATN.decision2state_nth.len();
+        let mut dfas = Vec::with_capacity(size);
+        for decision in 0..size {
+            dfas.push(RwLock::new(DFA::new(&*GLB_ATN, GLB_ATN.decision2state_nth[decision], decision)));
+        }
+        Arc::new(dfas)
+    };
+
+    static ref GLB_PREDCT_CTX_CACHE: Arc<RwLock<PredictionContextCache>> = Arc::new(RwLock::new(PredictionContextCache::new()));
+}
+
+struct ArishemLexer<L: Lexer> {
+    base: L,
+    channel_names: &'static [&'static str],
+    mode_names: &'static [&'static str],
+}
+
+struct ArishemErrorListener {}
+
+impl ErrorListener for ArishemErrorListener {}
+
 #[test]
-fn test_atn_deserialize() {
+fn test_arishem_lexer_atn_deserialize() {
     let atn_der = ATNDeserializer::new(None);
     let atn = atn_der.deserialize(SERIALIZED_ATN);
     println!("{:?}", atn);
+}
+
+#[test]
+fn test_create_new_arishem_lexer() {
+    let ss = StringStream::from("{}");
+    // create a new recognizer
+    let mut br = BaseRecognizer::new(RULE_NAMES, LITERAL_NAMES, SYMBOLIC_NAMES, "arishem.g4");
+    br.add_error_listener(Box::new(ArishemErrorListener {}));
+    let blas = BaseLexerATNSimulator::new(Arc::clone(&*GLB_ATN), Arc::clone(&*GLB_PREDCT_CTX_CACHE), Arc::clone(&*GLB_DECISION_TO_DFA));
+    let bl = BaseLexer::new(br, blas, CommonTokenFactory::default(), ss);
+    let arishem_lexer = ArishemLexer {
+        base: bl,
+        channel_names: CHANNEL_NAMES,
+        mode_names: MODE_NAMES,
+    };
+    println!("create arishem lexer success! {:?}", arishem_lexer.channel_names);
 }
